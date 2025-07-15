@@ -1,0 +1,19 @@
+{
+  "name": "bridge-card-game",
+  "version": "1.0.0",
+  "description": "A multiplayer bridge card game for the web",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "keywords": ["bridge", "card game", "multiplayer", "websocket"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "ws": "^8.14.2"
+  }
+}

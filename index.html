@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bridge Card Game</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <h1>Bridge Card Game</h1>
+            <div class="game-info">
+                <div class="player-info">
+                    <span id="current-player">Player 1</span>
+                    <span id="game-phase">Waiting for opponent...</span>
+                </div>
+                <div class="score">
+                    <span>Score: <span id="score">0</span></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-board">
+            <div class="north-player player-area">
+                <div class="player-name">North</div>
+                <div class="player-cards" id="north-cards"></div>
+            </div>
+
+            <div class="middle-section">
+                <div class="west-player player-area">
+                    <div class="player-name">West</div>
+                    <div class="player-cards vertical" id="west-cards"></div>
+                </div>
+
+                <div class="center-area">
+                    <div class="trick-area" id="trick-area">
+                        <div class="played-card" id="north-played"></div>
+                        <div class="played-card" id="east-played"></div>
+                        <div class="played-card" id="south-played"></div>
+                        <div class="played-card" id="west-played"></div>
+                    </div>
+                    <div class="bidding-area" id="bidding-area">
+                        <div class="bid-controls">
+                            <button class="bid-btn" data-bid="pass">Pass</button>
+                            <button class="bid-btn" data-bid="1c">1♣</button>
+                            <button class="bid-btn" data-bid="1d">1♦</button>
+                            <button class="bid-btn" data-bid="1h">1♥</button>
+                            <button class="bid-btn" data-bid="1s">1♠</button>
+                            <button class="bid-btn" data-bid="1nt">1NT</button>
+                        </div>
+                        <div class="bid-history" id="bid-history"></div>
+                    </div>
+                </div>
+
+                <div class="east-player player-area">
+                    <div class="player-name">East</div>
+                    <div class="player-cards vertical" id="east-cards"></div>
+                </div>
+            </div>
+
+            <div class="south-player player-area">
+                <div class="player-name">South (You)</div>
+                <div class="player-cards" id="south-cards"></div>
+            </div>
+        </div>
+
+        <div class="game-controls">
+            <button id="start-game" class="control-btn">Start Game</button>
+            <button id="new-game" class="control-btn">New Game</button>
+            <button id="connect" class="control-btn">Connect to Game</button>
+        </div>
+
+        <div class="connection-info">
+            <div class="connection-status">
+                Status: <span id="connection-status">Disconnected</span>
+            </div>
+            <div class="room-code">
+                Room Code: <span id="room-code">-</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="bridge-game.js"></script>
+</body>
+</html>
