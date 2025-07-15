@@ -402,7 +402,7 @@ class BridgeServer {
     }
 
     start(port = process.env.PORT || 3000) {
-        this.server.listen(port, () => {
+        this.server.listen(port, '0.0.0.0', () => {
             console.log(`Bridge server running on port ${port}`);
         });
     }
