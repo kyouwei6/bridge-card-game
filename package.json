@@ -2,10 +2,10 @@
   "name": "bridge-card-game",
   "version": "1.0.0",
   "description": "A multiplayer bridge card game for the web",
-  "main": "server.js",
+  "main": "server-simple.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
+    "start": "node server-simple.js",
+    "dev": "node server-simple.js"
   },
   "engines": {
     "node": "18.x"
