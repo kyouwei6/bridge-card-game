@@ -425,6 +425,9 @@ class BridgeGame {
         
         // Update trick leader display
         this.updateTrickLeaderDisplay();
+        
+        // Update trump display
+        this.updateTrumpDisplay();
     }
 
     getPhaseText() {
@@ -490,6 +493,24 @@ class BridgeGame {
                 playerArea.style.position = 'relative';
                 playerArea.appendChild(indicator);
             }
+        }
+    }
+    
+    updateTrumpDisplay() {
+        const trumpElement = document.getElementById('trump-suit');
+        if (this.contract && this.contract.suit) {
+            const suitSymbols = {
+                'c': '♣',
+                'd': '♦', 
+                'h': '♥',
+                's': '♠'
+            };
+            const trumpSymbol = suitSymbols[this.contract.suit] || this.contract.suit;
+            trumpElement.textContent = trumpSymbol;
+            trumpElement.style.color = (this.contract.suit === 'h' || this.contract.suit === 'd') ? '#d32f2f' : '#000';
+        } else {
+            trumpElement.textContent = 'None';
+            trumpElement.style.color = '#666';
         }
     }
 
@@ -695,6 +716,10 @@ class BridgeGame {
         this.clearPlayedCards();
         this.updateUI();
         document.getElementById('bid-history').innerHTML = '';
+        
+        // Reset trump display
+        document.getElementById('trump-suit').textContent = 'None';
+        document.getElementById('trump-suit').style.color = '#666';
     }
 
     connectToGame() {
