@@ -19,6 +19,12 @@ class BridgeGame {
         this.connection = null;
         this.playerId = null;
         this.roomCode = null;
+        this.playerNames = {
+            north: null,
+            east: null,
+            south: null,
+            west: null
+        };
         
         this.initializeGame();
         this.setupEventListeners();
@@ -506,11 +512,19 @@ class BridgeGame {
             case 'joined_room':
                 this.roomCode = data.roomCode;
                 this.playerId = data.position;
+                if (data.playerNames) {
+                    this.playerNames = data.playerNames;
+                }
                 document.getElementById('room-code').textContent = data.roomCode;
                 document.getElementById('current-player').textContent = `${data.position} (${data.playersCount}/4)`;
+                this.updatePlayerNames();
                 break;
                 
             case 'player_joined':
+                if (data.playerNames) {
+                    this.playerNames = data.playerNames;
+                }
+                this.updatePlayerNames();
                 alert(`${data.player.name} joined as ${data.player.position}`);
                 break;
                 
@@ -523,6 +537,10 @@ class BridgeGame {
                 break;
                 
             case 'player_left':
+                if (data.playerNames) {
+                    this.playerNames = data.playerNames;
+                }
+                this.updatePlayerNames();
                 alert(`${data.player.name} left the game`);
                 break;
                 
@@ -541,6 +559,11 @@ class BridgeGame {
         this.tricks = gameState.tricks;
         this.currentTrick = gameState.currentTrick;
         this.tricksWon = gameState.tricksWon;
+        
+        // Update player names if provided
+        if (gameState.playerNames) {
+            this.playerNames = gameState.playerNames;
+        }
         
         // Update player hands
         if (gameState.playerHand) {
@@ -563,12 +586,63 @@ class BridgeGame {
         
         this.updateUI();
         this.updateBidHistory();
+        this.updatePlayerNames();
     }
 
     sendToServer(message) {
         if (this.connection && this.connection.readyState === WebSocket.OPEN) {
             this.connection.send(JSON.stringify(message));
         }
+    }
+
+    getRelativePosition(actualPosition) {
+        if (!this.playerId) return actualPosition;
+        
+        const positions = ['north', 'east', 'south', 'west'];
+        const playerIndex = positions.indexOf(this.playerId);
+        const targetIndex = positions.indexOf(actualPosition);
+        
+        // Calculate relative position (south is always the player)
+        const relativeIndex = (targetIndex - playerIndex + 4) % 4;
+        const relativePositions = ['south', 'west', 'north', 'east'];
+        
+        return relativePositions[relativeIndex];
+    }
+
+    getActualPosition(relativePosition) {
+        if (!this.playerId) return relativePosition;
+        
+        const positions = ['north', 'east', 'south', 'west'];
+        const relativePositions = ['south', 'west', 'north', 'east'];
+        const playerIndex = positions.indexOf(this.playerId);
+        const relativeIndex = relativePositions.indexOf(relativePosition);
+        
+        // Calculate actual position
+        const actualIndex = (playerIndex + relativeIndex) % 4;
+        
+        return positions[actualIndex];
+    }
+
+    updatePlayerNames() {
+        const positions = ['north', 'east', 'south', 'west'];
+        
+        positions.forEach(position => {
+            const relativePos = this.getRelativePosition(position);
+            const nameElement = document.getElementById(`${relativePos}-name`);
+            const labelElement = document.getElementById(`${relativePos}-label`);
+            
+            if (nameElement) {
+                const playerName = this.playerNames[position];
+                nameElement.textContent = playerName || '-';
+                
+                // Update label to show relative direction
+                if (labelElement && this.playerId) {
+                    const isYou = position === this.playerId;
+                    const relativeDirection = relativePos.charAt(0).toUpperCase() + relativePos.slice(1);
+                    labelElement.textContent = isYou ? `${relativeDirection} (You)` : relativeDirection;
+                }
+            }
+        });
     }
 }
 

@@ -85,6 +85,12 @@ class BridgeServer {
         const room = {
             code: roomCode,
             players: [],
+            playerNames: {
+                north: null,
+                east: null,
+                south: null,
+                west: null
+            },
             gameState: {
                 phase: 'waiting',
                 deck: [],
@@ -133,19 +139,22 @@ class BridgeServer {
         };
         
         room.players.push(player);
+        room.playerNames[availablePosition] = playerName;
         this.players.set(ws, player);
         
         ws.send(JSON.stringify({
             type: 'joined_room',
             roomCode: roomCode,
             position: availablePosition,
-            playersCount: room.players.length
+            playersCount: room.players.length,
+            playerNames: room.playerNames
         }));
         
         this.broadcastToRoom(roomCode, {
             type: 'player_joined',
             player: { name: playerName, position: availablePosition },
-            playersCount: room.players.length
+            playersCount: room.players.length,
+            playerNames: room.playerNames
         });
         
         if (room.players.length === 4) {
@@ -383,10 +392,12 @@ class BridgeServer {
             const room = this.rooms.get(player.roomCode);
             if (room) {
                 room.players = room.players.filter(p => p.ws !== ws);
+                room.playerNames[player.position] = null;
                 this.broadcastToRoom(player.roomCode, {
                     type: 'player_left',
                     player: { name: player.name, position: player.position },
-                    playersCount: room.players.length
+                    playersCount: room.players.length,
+                    playerNames: room.playerNames
                 });
                 
                 if (room.players.length === 0) {
