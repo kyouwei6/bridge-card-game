@@ -340,6 +340,33 @@ class BridgeServer {
         this.broadcastGameState(room);
     }
 
+    isValidCardPlay(card, playerPosition, room) {
+        const hand = room.gameState.hands[playerPosition];
+        const cardIndex = hand.findIndex(c => 
+            c.suit === card.suit && c.rank === card.rank
+        );
+        
+        if (cardIndex === -1) return false; // Player doesn't have this card
+        
+        // If this is the first card of the trick, any card is valid
+        if (room.gameState.currentTrick.length === 0) return true;
+        
+        // Get the suit that was led
+        const leadSuit = room.gameState.currentTrick[0].card.suit;
+        
+        // If playing the same suit as led, it's valid
+        if (card.suit === leadSuit) return true;
+        
+        // If playing a different suit, check if player has any cards of the lead suit
+        const hasLeadSuit = hand.some(c => c.suit === leadSuit);
+        
+        // If player has cards of the lead suit, they must play them
+        if (hasLeadSuit) return false;
+        
+        // If player has no cards of the lead suit, they can play any card
+        return true;
+    }
+
     handlePlayCard(ws, data) {
         const player = this.players.get(ws);
         if (!player) return;
@@ -348,6 +375,15 @@ class BridgeServer {
         if (!room || room.gameState.phase !== 'playing') return;
         
         if (room.gameState.currentPlayer !== player.position) return;
+        
+        // Validate card play according to bridge rules
+        if (!this.isValidCardPlay(data.card, player.position, room)) {
+            ws.send(JSON.stringify({
+                type: 'error',
+                message: 'Invalid card play. You must follow suit if you have cards of the led suit.'
+            }));
+            return;
+        }
         
         const hand = room.gameState.hands[player.position];
         const cardIndex = hand.findIndex(c => 

@@ -144,9 +144,47 @@ class BridgeGame {
         this.updateUI();
     }
 
+    isValidCardPlay(card, player) {
+        if (this.gamePhase !== 'playing') return false;
+        if (player !== this.currentPlayer) return false;
+        
+        const playerHand = this.players[player];
+        const cardIndex = playerHand.findIndex(c => c.suit === card.suit && c.rank === card.rank);
+        
+        if (cardIndex === -1) return false; // Player doesn't have this card
+        
+        // If this is the first card of the trick, any card is valid
+        if (this.currentTrick.length === 0) return true;
+        
+        // Get the suit that was led
+        const leadSuit = this.currentTrick[0].card.suit;
+        
+        // If playing the same suit as led, it's valid
+        if (card.suit === leadSuit) return true;
+        
+        // If playing a different suit, check if player has any cards of the lead suit
+        const hasLeadSuit = playerHand.some(c => c.suit === leadSuit);
+        
+        // If player has cards of the lead suit, they must play them
+        if (hasLeadSuit) return false;
+        
+        // If player has no cards of the lead suit, they can play any card
+        return true;
+    }
+
     playCard(card, player) {
         if (this.gamePhase !== 'playing') return false;
         if (player !== this.currentPlayer) return false;
+        
+        // Validate card play according to bridge rules
+        if (!this.isValidCardPlay(card, player)) {
+            if (this.currentTrick.length > 0) {
+                const leadSuit = this.currentTrick[0].card.suit;
+                const suitName = this.getSuitName(leadSuit);
+                alert(`You must follow suit. Please play a ${suitName} card if you have one.`);
+            }
+            return false;
+        }
         
         // If connected to server, send card play to server
         if (this.connection && this.connection.readyState === WebSocket.OPEN) {
@@ -183,6 +221,16 @@ class BridgeGame {
         
         this.updateUI();
         return true;
+    }
+
+    getSuitName(suit) {
+        const suitNames = {
+            '♠': 'Spades',
+            '♥': 'Hearts', 
+            '♦': 'Diamonds',
+            '♣': 'Clubs'
+        };
+        return suitNames[suit] || suit;
     }
 
     completeTrick() {
@@ -464,10 +512,26 @@ class BridgeGame {
     updateControls() {
         const startBtn = document.getElementById('start-game');
         const newGameBtn = document.getElementById('new-game');
+        const connectBtn = document.getElementById('connect');
         const biddingArea = document.getElementById('bidding-area');
         
-        startBtn.disabled = this.gamePhase !== 'waiting';
-        newGameBtn.disabled = false;
+        // Hide/show buttons based on game phase
+        if (this.gamePhase === 'waiting') {
+            startBtn.style.display = 'inline-block';
+            newGameBtn.style.display = 'inline-block';
+            connectBtn.style.display = 'inline-block';
+            startBtn.disabled = false;
+        } else if (this.gamePhase === 'bidding' || this.gamePhase === 'playing') {
+            startBtn.style.display = 'none';
+            connectBtn.style.display = 'none';
+            newGameBtn.style.display = 'inline-block';
+            newGameBtn.disabled = false;
+        } else {
+            startBtn.style.display = 'inline-block';
+            newGameBtn.style.display = 'inline-block';
+            connectBtn.style.display = 'inline-block';
+            startBtn.disabled = this.gamePhase !== 'waiting';
+        }
         
         biddingArea.style.display = this.gamePhase === 'bidding' ? 'block' : 'none';
         
@@ -767,6 +831,12 @@ class BridgeGame {
     updatePositionControls() {
         const positionControls = document.getElementById('position-controls');
         const positionButtons = document.querySelectorAll('.position-btn');
+        
+        // Hide position controls during bidding, playing, or finished phases
+        if (this.gamePhase !== 'waiting') {
+            positionControls.style.display = 'none';
+            return;
+        }
         
         if (this.connection && this.connection.readyState === WebSocket.OPEN && this.playerId) {
             positionControls.style.display = 'block';
