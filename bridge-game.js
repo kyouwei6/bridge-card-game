@@ -25,6 +25,7 @@ class BridgeGame {
             south: null,
             west: null
         };
+        this.trickLeader = null;
         
         this.initializeGame();
         this.setupEventListeners();
@@ -207,6 +208,11 @@ class BridgeGame {
         // Add to current trick
         this.currentTrick.push({ card, player });
         
+        // Track who led the trick
+        if (this.currentTrick.length === 1) {
+            this.trickLeader = player;
+        }
+        
         // Update UI
         this.displayPlayedCard(card, player);
         
@@ -241,6 +247,7 @@ class BridgeGame {
         this.tricks.push([...this.currentTrick]);
         this.currentTrick = [];
         this.currentPlayer = winner;
+        this.trickLeader = null;
         
         // Clear played cards display
         this.clearPlayedCards();
@@ -404,8 +411,8 @@ class BridgeGame {
         // Update game phase
         document.getElementById('game-phase').textContent = this.getPhaseText();
         
-        // Update current player
-        document.getElementById('current-player').textContent = this.currentPlayer;
+        // Update current player with enhanced display
+        this.updateCurrentPlayerDisplay();
         
         // Update cards display
         this.displayCards();
@@ -415,6 +422,9 @@ class BridgeGame {
         
         // Update score
         this.updateScore();
+        
+        // Update trick leader display
+        this.updateTrickLeaderDisplay();
     }
 
     getPhaseText() {
@@ -424,6 +434,62 @@ class BridgeGame {
             case 'playing': return 'Playing cards';
             case 'finished': return 'Game finished';
             default: return 'Unknown phase';
+        }
+    }
+    
+    updateCurrentPlayerDisplay() {
+        const currentPlayerEl = document.getElementById('current-player');
+        
+        // Remove previous player highlights
+        document.querySelectorAll('.current-player-highlight').forEach(el => {
+            el.classList.remove('current-player-highlight');
+        });
+        
+        if (this.gamePhase === 'playing' || this.gamePhase === 'bidding') {
+            const playerName = this.playerNames[this.currentPlayer] || 'Unknown';
+            const position = this.currentPlayer.charAt(0).toUpperCase() + this.currentPlayer.slice(1);
+            currentPlayerEl.textContent = `${position} (${playerName}) is ${this.gamePhase === 'playing' ? 'playing card' : 'bidding'}`;
+            
+            // Highlight current player's area
+            const relativePosition = this.getRelativePosition(this.currentPlayer);
+            const playerNameDisplay = document.getElementById(`${relativePosition}-name`);
+            if (playerNameDisplay) {
+                playerNameDisplay.classList.add('current-player-highlight');
+            }
+        } else {
+            currentPlayerEl.textContent = this.currentPlayer;
+        }
+    }
+    
+    updateTrickLeaderDisplay() {
+        // Clear any existing trick leader indicators
+        document.querySelectorAll('.trick-leader-indicator').forEach(el => el.remove());
+        
+        if (this.trickLeader && this.gamePhase === 'playing') {
+            const relativePosition = this.getRelativePosition(this.trickLeader);
+            const playerArea = document.querySelector(`.${relativePosition}-player`);
+            
+            if (playerArea) {
+                const indicator = document.createElement('div');
+                indicator.className = 'trick-leader-indicator';
+                indicator.textContent = '🃏 Led this trick';
+                indicator.style.cssText = `
+                    position: absolute;
+                    top: -25px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: #ff9800;
+                    color: white;
+                    padding: 2px 8px;
+                    border-radius: 10px;
+                    font-size: 12px;
+                    font-weight: bold;
+                    white-space: nowrap;
+                    z-index: 10;
+                `;
+                playerArea.style.position = 'relative';
+                playerArea.appendChild(indicator);
+            }
         }
     }
 
@@ -620,6 +686,7 @@ class BridgeGame {
         this.declarer = null;
         this.dummy = null;
         this.tricksWon = { ns: 0, ew: 0 };
+        this.trickLeader = null;
         
         for (let player in this.players) {
             this.players[player] = [];
@@ -739,6 +806,7 @@ class BridgeGame {
         this.tricks = gameState.tricks;
         this.currentTrick = gameState.currentTrick;
         this.tricksWon = gameState.tricksWon;
+        this.trickLeader = gameState.trickLeader;
         
         // Update player names if provided
         if (gameState.playerNames) {

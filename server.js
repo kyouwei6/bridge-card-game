@@ -110,7 +110,8 @@ class BridgeServer {
                 contract: null,
                 tricks: [],
                 currentTrick: [],
-                tricksWon: { ns: 0, ew: 0 }
+                tricksWon: { ns: 0, ew: 0 },
+                trickLeader: null
             }
         };
         
@@ -395,6 +396,11 @@ class BridgeServer {
         const card = hand.splice(cardIndex, 1)[0];
         room.gameState.currentTrick.push({ card, player: player.position });
         
+        // Track who led the trick
+        if (room.gameState.currentTrick.length === 1) {
+            room.gameState.trickLeader = player.position;
+        }
+        
         if (room.gameState.currentTrick.length === 4) {
             setTimeout(() => {
                 this.completeTrick(room);
@@ -414,6 +420,7 @@ class BridgeServer {
         room.gameState.tricks.push([...room.gameState.currentTrick]);
         room.gameState.currentTrick = [];
         room.gameState.currentPlayer = winner;
+        room.gameState.trickLeader = null;
         
         if (room.gameState.tricks.length === 13) {
             room.gameState.phase = 'finished';

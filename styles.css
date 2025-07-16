@@ -6,9 +6,9 @@
 
 body {
     font-family: Arial, sans-serif;
-    background: linear-gradient(135deg, #0c4a3e 0%, #1e3a8a 100%);
+    background: #FFC1E0;
     min-height: 100vh;
-    color: white;
+    color: #333;
 }
 
 .game-container {
@@ -25,14 +25,14 @@ body {
 .game-header h1 {
     font-size: 2.5em;
     margin-bottom: 10px;
-    color: #ffd700;
+    color: #8B4513;
 }
 
 .game-info {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.6);
     padding: 10px 20px;
     border-radius: 10px;
     margin-bottom: 20px;
@@ -42,7 +42,7 @@ body {
     display: grid;
     grid-template-rows: auto 1fr auto;
     height: 600px;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.6);
     border-radius: 20px;
     padding: 20px;
     position: relative;
@@ -57,14 +57,14 @@ body {
 .player-name {
     font-weight: bold;
     margin-bottom: 5px;
-    color: #ffd700;
+    color: #8B4513;
 }
 
 .player-name-display {
     font-size: 14px;
-    color: #ffffff;
+    color: #333;
     margin-bottom: 10px;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.8);
     padding: 3px 8px;
     border-radius: 5px;
     min-width: 80px;
@@ -346,6 +346,20 @@ body {
 .position-btn.occupied {
     background: #e74c3c;
     cursor: not-allowed;
+}
+
+.current-player-highlight {
+    background: #ff9800 !important;
+    color: white !important;
+    border: 2px solid #ff5722 !important;
+    box-shadow: 0 0 10px rgba(255, 152, 0, 0.5);
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 10px rgba(255, 152, 0, 0.5); }
+    50% { box-shadow: 0 0 20px rgba(255, 152, 0, 0.8); }
+    100% { box-shadow: 0 0 10px rgba(255, 152, 0, 0.5); }
 }
 
 @media (max-width: 768px) {
