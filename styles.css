@@ -185,29 +185,10 @@ body {
 }
 
 .bid-controls {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 10px;
-    justify-content: center;
-}
-
-.bid-levels {
-    margin-bottom: 15px;
-}
-
-.bid-level {
-    display: flex;
-    align-items: center;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
     gap: 5px;
-    margin-bottom: 8px;
-    flex-wrap: wrap;
-}
-
-.level-label {
-    font-weight: bold;
-    color: #ffd700;
-    min-width: 20px;
-    text-align: center;
+    margin-bottom: 15px;
 }
 
 .bid-btn {
