@@ -287,6 +287,14 @@ class BridgeGame {
             });
         });
 
+        // Position change buttons
+        document.querySelectorAll('.position-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const newPosition = e.target.dataset.position;
+                this.changePosition(newPosition);
+            });
+        });
+
         // Card click handlers will be added dynamically
     }
 
@@ -318,31 +326,35 @@ class BridgeGame {
     }
 
     displayCards() {
-        const positions = ['north', 'east', 'south', 'west'];
+        const actualPositions = ['north', 'east', 'south', 'west'];
         
-        positions.forEach(position => {
-            const container = document.getElementById(`${position}-cards`);
-            container.innerHTML = '';
+        actualPositions.forEach(actualPosition => {
+            const relativePosition = this.getRelativePosition(actualPosition);
+            const container = document.getElementById(`${relativePosition}-cards`);
             
-            const cards = this.players[position];
-            
-            cards.forEach((card, index) => {
-                const cardElement = this.createCardElement(card, position);
+            if (container) {
+                container.innerHTML = '';
                 
-                // Only make player's own cards clickable
-                if (position === this.playerId || (!this.playerId && position === 'south')) {
-                    cardElement.addEventListener('click', () => {
-                        const playerPosition = this.playerId || 'south';
-                        if (this.gamePhase === 'playing' && this.currentPlayer === playerPosition) {
-                            if (this.playCard(card, playerPosition)) {
-                                cardElement.remove();
+                const cards = this.players[actualPosition] || [];
+                
+                cards.forEach((card, index) => {
+                    const cardElement = this.createCardElement(card, actualPosition);
+                    
+                    // Only make player's own cards clickable
+                    const playerPosition = this.playerId || 'south';
+                    if (actualPosition === playerPosition) {
+                        cardElement.addEventListener('click', () => {
+                            if (this.gamePhase === 'playing' && this.currentPlayer === playerPosition) {
+                                if (this.playCard(card, playerPosition)) {
+                                    cardElement.remove();
+                                }
                             }
-                        }
-                    });
-                }
-                
-                container.appendChild(cardElement);
-            });
+                        });
+                    }
+                    
+                    container.appendChild(cardElement);
+                });
+            }
         });
     }
 
@@ -350,16 +362,30 @@ class BridgeGame {
         const cardDiv = document.createElement('div');
         cardDiv.className = `card ${card.color}`;
         
-        // Show card back for opponents (except dummy in playing phase)
-        if (position !== 'south' && !(this.gamePhase === 'playing' && position === this.dummy)) {
+        // Check if this card should be visible to the player
+        const playerPosition = this.playerId || 'south';
+        const isPlayerOwnCards = position === playerPosition;
+        const isDummyCards = (this.gamePhase === 'playing' && position === this.dummy);
+        const isPlayedCard = position === 'played';
+        
+        // Show card face if it's player's own cards, dummy cards, or played cards
+        if (isPlayerOwnCards || isDummyCards || isPlayedCard) {
+            // Check if card has valid data
+            if (card.rank && card.suit) {
+                cardDiv.innerHTML = `
+                    <div>${card.rank}</div>
+                    <div>${card.suit}</div>
+                    <div>${card.rank}</div>
+                `;
+            } else {
+                // Fallback for cards without data
+                cardDiv.className += ' card-back';
+                cardDiv.textContent = 'BRIDGE';
+            }
+        } else {
+            // Show card back for opponents
             cardDiv.className += ' card-back';
             cardDiv.textContent = 'BRIDGE';
-        } else {
-            cardDiv.innerHTML = `
-                <div>${card.rank}</div>
-                <div>${card.suit}</div>
-                <div>${card.rank}</div>
-            `;
         }
         
         return cardDiv;
@@ -544,6 +570,19 @@ class BridgeGame {
                 alert(`${data.player.name} left the game`);
                 break;
                 
+            case 'position_changed':
+                // Check if this was the current player who changed position
+                if (data.player.oldPosition === this.playerId) {
+                    this.playerId = data.player.newPosition;
+                }
+                
+                if (data.playerNames) {
+                    this.playerNames = data.playerNames;
+                }
+                this.updatePlayerNames();
+                this.displayCards(); // Refresh card display with new positioning
+                break;
+                
             case 'error':
                 alert(`Error: ${data.message}`);
                 break;
@@ -642,6 +681,66 @@ class BridgeGame {
                     labelElement.textContent = isYou ? `${relativeDirection} (You)` : relativeDirection;
                 }
             }
+        });
+        
+        // Update position controls
+        this.updatePositionControls();
+    }
+
+    updatePositionControls() {
+        const positionControls = document.getElementById('position-controls');
+        const positionButtons = document.querySelectorAll('.position-btn');
+        
+        if (this.connection && this.connection.readyState === WebSocket.OPEN && this.playerId) {
+            positionControls.style.display = 'block';
+            
+            positionButtons.forEach(btn => {
+                const position = btn.dataset.position;
+                
+                // Reset classes
+                btn.className = 'position-btn';
+                btn.disabled = false;
+                
+                // Mark current position
+                if (position === this.playerId) {
+                    btn.classList.add('current');
+                    btn.disabled = false; // Allow switching away from current position
+                }
+                
+                // Mark occupied positions (except current player)
+                else if (this.playerNames[position]) {
+                    btn.classList.add('occupied');
+                    btn.disabled = true;
+                }
+            });
+        } else {
+            positionControls.style.display = 'none';
+        }
+    }
+
+    changePosition(newPosition) {
+        if (!this.connection || this.connection.readyState !== WebSocket.OPEN) {
+            alert('Not connected to a game');
+            return;
+        }
+        
+        if (newPosition === this.playerId) {
+            return; // Already in this position
+        }
+        
+        if (this.playerNames[newPosition]) {
+            alert('Position is already occupied');
+            return;
+        }
+        
+        if (this.gamePhase !== 'waiting') {
+            alert('Cannot change position after game has started');
+            return;
+        }
+        
+        this.sendToServer({
+            type: 'change_position',
+            newPosition: newPosition
         });
     }
 }

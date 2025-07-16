@@ -277,6 +277,56 @@ body {
     color: #ffd700;
 }
 
+.position-controls {
+    margin-top: 10px;
+    text-align: center;
+}
+
+.position-label {
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #ffd700;
+}
+
+.position-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.position-btn {
+    background: #16a085;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.3s;
+    min-width: 60px;
+}
+
+.position-btn:hover {
+    background: #138d75;
+}
+
+.position-btn:disabled {
+    background: #666;
+    cursor: not-allowed;
+}
+
+.position-btn.current {
+    background: #ffd700;
+    color: #000;
+    font-weight: bold;
+}
+
+.position-btn.occupied {
+    background: #e74c3c;
+    cursor: not-allowed;
+}
+
 @media (max-width: 768px) {
     .game-board {
         height: auto;

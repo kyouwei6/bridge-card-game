@@ -84,6 +84,9 @@ class BridgeServer {
             case 'start_game':
                 this.startGame(ws);
                 break;
+            case 'change_position':
+                this.handleChangePosition(ws, data);
+                break;
         }
     }
 
@@ -413,6 +416,53 @@ class BridgeServer {
             }
             this.players.delete(ws);
         }
+    }
+
+    handleChangePosition(ws, data) {
+        const player = this.players.get(ws);
+        if (!player) return;
+        
+        const room = this.rooms.get(player.roomCode);
+        if (!room) return;
+        
+        // Check if game has started
+        if (room.gameState.phase !== 'waiting') {
+            ws.send(JSON.stringify({
+                type: 'error',
+                message: 'Cannot change position after game has started'
+            }));
+            return;
+        }
+        
+        // Check if new position is available
+        if (room.playerNames[data.newPosition]) {
+            ws.send(JSON.stringify({
+                type: 'error',
+                message: 'Position is already occupied'
+            }));
+            return;
+        }
+        
+        // Clear old position
+        room.playerNames[player.position] = null;
+        
+        // Update to new position
+        const oldPosition = player.position;
+        player.position = data.newPosition;
+        room.playerNames[data.newPosition] = player.name;
+        
+        // Update player in rooms array
+        const playerIndex = room.players.findIndex(p => p.ws === ws);
+        if (playerIndex !== -1) {
+            room.players[playerIndex] = player;
+        }
+        
+        // Notify all players in room
+        this.broadcastToRoom(player.roomCode, {
+            type: 'position_changed',
+            player: { name: player.name, oldPosition, newPosition: data.newPosition },
+            playerNames: room.playerNames
+        });
     }
 
     generateRoomCode() {
