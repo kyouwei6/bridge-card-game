@@ -60,6 +60,53 @@ class BridgeGame {
         return values[rank];
     }
 
+    getBidValue(bidString) {
+        if (bidString === 'pass' || bidString === 'double' || bidString === 'redouble') {
+            return { level: 0, suit: bidString, value: 0 };
+        }
+        
+        const level = parseInt(bidString[0]);
+        const suit = bidString.slice(1);
+        
+        // Suit values: clubs=1, diamonds=2, hearts=3, spades=4, notrump=5
+        const suitValues = { 'c': 1, 'd': 2, 'h': 3, 's': 4, 'nt': 5 };
+        const suitValue = suitValues[suit] || 0;
+        
+        // Calculate overall bid value (level * 5 + suit value)
+        const value = level * 5 + suitValue;
+        
+        return { level, suit, value };
+    }
+
+    isValidBid(bidString) {
+        if (bidString === 'pass') return true;
+        
+        // Special bids
+        if (bidString === 'double' || bidString === 'redouble') {
+            // TODO: Implement proper double/redouble validation
+            return true;
+        }
+        
+        const currentBid = this.getBidValue(bidString);
+        
+        // Find the last non-pass bid
+        let lastBid = null;
+        for (let i = this.bids.length - 1; i >= 0; i--) {
+            if (this.bids[i].bid !== 'pass') {
+                lastBid = this.getBidValue(this.bids[i].bid);
+                break;
+            }
+        }
+        
+        // If no previous bids, any level 1+ bid is valid
+        if (!lastBid) {
+            return currentBid.level >= 1 && currentBid.level <= 7;
+        }
+        
+        // New bid must be higher than last bid
+        return currentBid.value > lastBid.value && currentBid.level >= 1 && currentBid.level <= 7;
+    }
+
     shuffleDeck() {
         for (let i = this.deck.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -195,6 +242,12 @@ class BridgeGame {
     makeBid(bidString) {
         if (this.gamePhase !== 'bidding') return false;
         
+        // Validate bid before sending/processing
+        if (!this.isValidBid(bidString)) {
+            alert('Invalid bid. Bid must be higher than the last bid.');
+            return false;
+        }
+        
         // If connected to server, send bid to server
         if (this.connection && this.connection.readyState === WebSocket.OPEN) {
             this.sendToServer({
@@ -205,17 +258,18 @@ class BridgeGame {
         }
         
         // Local game logic (for single player mode)
+        const bidInfo = this.getBidValue(bidString);
         const bid = {
             player: this.currentPlayer,
             bid: bidString,
-            level: bidString === 'pass' ? 0 : parseInt(bidString[0]),
-            suit: bidString === 'pass' ? null : bidString.slice(1)
+            level: bidInfo.level,
+            suit: bidInfo.suit
         };
         
         this.bids.push(bid);
         this.updateBidHistory();
         
-        if (bidString !== 'pass') {
+        if (bidString !== 'pass' && bidString !== 'double' && bidString !== 'redouble') {
             this.contract = bid;
             this.declarer = this.currentPlayer;
             this.dummy = this.getPartner(this.currentPlayer);
@@ -415,10 +469,31 @@ class BridgeGame {
         
         biddingArea.style.display = this.gamePhase === 'bidding' ? 'block' : 'none';
         
-        // Enable/disable bid buttons
+        // Enable/disable bid buttons based on validity
+        this.updateBidButtons();
+    }
+
+    updateBidButtons() {
+        const playerPosition = this.playerId || 'south';
+        const isBiddingPhase = this.gamePhase === 'bidding';
+        const isPlayerTurn = this.currentPlayer === playerPosition;
+        
         document.querySelectorAll('.bid-btn').forEach(btn => {
-            const playerPosition = this.playerId || 'south';
-            btn.disabled = this.gamePhase !== 'bidding' || this.currentPlayer !== playerPosition;
+            const bidString = btn.dataset.bid;
+            
+            if (!isBiddingPhase || !isPlayerTurn) {
+                btn.disabled = true;
+            } else {
+                const isValid = this.isValidBid(bidString);
+                btn.disabled = !isValid;
+                
+                // Add visual styling for invalid bids
+                if (isValid) {
+                    btn.classList.remove('invalid');
+                } else {
+                    btn.classList.add('invalid');
+                }
+            }
         });
     }
 
@@ -674,11 +749,11 @@ class BridgeGame {
                 const playerName = this.playerNames[position];
                 nameElement.textContent = playerName || '-';
                 
-                // Update label to show relative direction
-                if (labelElement && this.playerId) {
+                // Update label to show ACTUAL position (not relative)
+                if (labelElement) {
                     const isYou = position === this.playerId;
-                    const relativeDirection = relativePos.charAt(0).toUpperCase() + relativePos.slice(1);
-                    labelElement.textContent = isYou ? `${relativeDirection} (You)` : relativeDirection;
+                    const actualDirection = position.charAt(0).toUpperCase() + position.slice(1);
+                    labelElement.textContent = isYou ? `${actualDirection} (You)` : actualDirection;
                 }
             }
         });

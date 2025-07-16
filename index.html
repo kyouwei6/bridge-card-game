@@ -44,12 +44,62 @@
                     </div>
                     <div class="bidding-area" id="bidding-area">
                         <div class="bid-controls">
-                            <button class="bid-btn" data-bid="pass">Pass</button>
-                            <button class="bid-btn" data-bid="1c">1♣</button>
-                            <button class="bid-btn" data-bid="1d">1♦</button>
-                            <button class="bid-btn" data-bid="1h">1♥</button>
-                            <button class="bid-btn" data-bid="1s">1♠</button>
-                            <button class="bid-btn" data-bid="1nt">1NT</button>
+                            <button class="bid-btn special" data-bid="pass">Pass</button>
+                            <button class="bid-btn special" data-bid="double">Double</button>
+                            <button class="bid-btn special" data-bid="redouble">Redouble</button>
+                        </div>
+                        <div class="bid-levels" id="bid-levels">
+                            <!-- Level 1 -->
+                            <div class="bid-level">
+                                <span class="level-label">1</span>
+                                <button class="bid-btn" data-bid="1c">♣</button>
+                                <button class="bid-btn" data-bid="1d">♦</button>
+                                <button class="bid-btn" data-bid="1h">♥</button>
+                                <button class="bid-btn" data-bid="1s">♠</button>
+                                <button class="bid-btn" data-bid="1nt">NT</button>
+                            </div>
+                            <!-- Level 2 -->
+                            <div class="bid-level">
+                                <span class="level-label">2</span>
+                                <button class="bid-btn" data-bid="2c">♣</button>
+                                <button class="bid-btn" data-bid="2d">♦</button>
+                                <button class="bid-btn" data-bid="2h">♥</button>
+                                <button class="bid-btn" data-bid="2s">♠</button>
+                                <button class="bid-btn" data-bid="2nt">NT</button>
+                            </div>
+                            <!-- Level 3 -->
+                            <div class="bid-level">
+                                <span class="level-label">3</span>
+                                <button class="bid-btn" data-bid="3c">♣</button>
+                                <button class="bid-btn" data-bid="3d">♦</button>
+                                <button class="bid-btn" data-bid="3h">♥</button>
+                                <button class="bid-btn" data-bid="3s">♠</button>
+                                <button class="bid-btn" data-bid="3nt">NT</button>
+                            </div>
+                            <!-- Level 4-7 (condensed) -->
+                            <div class="bid-level">
+                                <span class="level-label">4+</span>
+                                <button class="bid-btn" data-bid="4c">4♣</button>
+                                <button class="bid-btn" data-bid="4d">4♦</button>
+                                <button class="bid-btn" data-bid="4h">4♥</button>
+                                <button class="bid-btn" data-bid="4s">4♠</button>
+                                <button class="bid-btn" data-bid="4nt">4NT</button>
+                                <button class="bid-btn" data-bid="5c">5♣</button>
+                                <button class="bid-btn" data-bid="5d">5♦</button>
+                                <button class="bid-btn" data-bid="5h">5♥</button>
+                                <button class="bid-btn" data-bid="5s">5♠</button>
+                                <button class="bid-btn" data-bid="5nt">5NT</button>
+                                <button class="bid-btn" data-bid="6c">6♣</button>
+                                <button class="bid-btn" data-bid="6d">6♦</button>
+                                <button class="bid-btn" data-bid="6h">6♥</button>
+                                <button class="bid-btn" data-bid="6s">6♠</button>
+                                <button class="bid-btn" data-bid="6nt">6NT</button>
+                                <button class="bid-btn" data-bid="7c">7♣</button>
+                                <button class="bid-btn" data-bid="7d">7♦</button>
+                                <button class="bid-btn" data-bid="7h">7♥</button>
+                                <button class="bid-btn" data-bid="7s">7♠</button>
+                                <button class="bid-btn" data-bid="7nt">7NT</button>
+                            </div>
                         </div>
                         <div class="bid-history" id="bid-history"></div>
                     </div>

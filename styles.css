@@ -185,31 +185,71 @@ body {
 }
 
 .bid-controls {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+    justify-content: center;
+}
+
+.bid-levels {
     margin-bottom: 15px;
+}
+
+.bid-level {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+}
+
+.level-label {
+    font-weight: bold;
+    color: #ffd700;
+    min-width: 20px;
+    text-align: center;
 }
 
 .bid-btn {
     background: #ffd700;
     color: #000;
     border: none;
-    padding: 8px 12px;
-    border-radius: 5px;
+    padding: 6px 10px;
+    border-radius: 4px;
     cursor: pointer;
     font-weight: bold;
-    transition: background 0.3s;
+    font-size: 12px;
+    transition: all 0.3s;
+    min-width: 35px;
+}
+
+.bid-btn.special {
+    background: #16a085;
+    color: white;
+    padding: 6px 12px;
 }
 
 .bid-btn:hover {
     background: #ffed4a;
+    transform: translateY(-1px);
+}
+
+.bid-btn.special:hover {
+    background: #138d75;
 }
 
 .bid-btn:disabled {
     background: #666;
     color: #999;
     cursor: not-allowed;
+    transform: none;
+    opacity: 0.5;
+}
+
+.bid-btn.invalid {
+    background: #999;
+    color: #666;
+    opacity: 0.3;
 }
 
 .bid-history {

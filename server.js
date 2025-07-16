@@ -243,6 +243,53 @@ class BridgeServer {
         return values[rank];
     }
 
+    getBidValue(bidString) {
+        if (bidString === 'pass' || bidString === 'double' || bidString === 'redouble') {
+            return { level: 0, suit: bidString, value: 0 };
+        }
+        
+        const level = parseInt(bidString[0]);
+        const suit = bidString.slice(1);
+        
+        // Suit values: clubs=1, diamonds=2, hearts=3, spades=4, notrump=5
+        const suitValues = { 'c': 1, 'd': 2, 'h': 3, 's': 4, 'nt': 5 };
+        const suitValue = suitValues[suit] || 0;
+        
+        // Calculate overall bid value (level * 5 + suit value)
+        const value = level * 5 + suitValue;
+        
+        return { level, suit, value };
+    }
+
+    isValidBid(bidString, gameState) {
+        if (bidString === 'pass') return true;
+        
+        // Special bids
+        if (bidString === 'double' || bidString === 'redouble') {
+            // TODO: Implement proper double/redouble validation
+            return true;
+        }
+        
+        const currentBid = this.getBidValue(bidString);
+        
+        // Find the last non-pass bid
+        let lastBid = null;
+        for (let i = gameState.bids.length - 1; i >= 0; i--) {
+            if (gameState.bids[i].bid !== 'pass') {
+                lastBid = this.getBidValue(gameState.bids[i].bid);
+                break;
+            }
+        }
+        
+        // If no previous bids, any level 1+ bid is valid
+        if (!lastBid) {
+            return currentBid.level >= 1 && currentBid.level <= 7;
+        }
+        
+        // New bid must be higher than last bid
+        return currentBid.value > lastBid.value && currentBid.level >= 1 && currentBid.level <= 7;
+    }
+
     shuffleDeck(deck) {
         for (let i = deck.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -259,16 +306,26 @@ class BridgeServer {
         
         if (room.gameState.currentPlayer !== player.position) return;
         
+        // Validate bid on server side
+        if (!this.isValidBid(data.bid, room.gameState)) {
+            ws.send(JSON.stringify({
+                type: 'error',
+                message: 'Invalid bid. Bid must be higher than the last bid.'
+            }));
+            return;
+        }
+        
+        const bidInfo = this.getBidValue(data.bid);
         const bid = {
             player: player.position,
             bid: data.bid,
-            level: data.bid === 'pass' ? 0 : parseInt(data.bid[0]),
-            suit: data.bid === 'pass' ? null : data.bid.slice(1)
+            level: bidInfo.level,
+            suit: bidInfo.suit
         };
         
         room.gameState.bids.push(bid);
         
-        if (data.bid !== 'pass') {
+        if (data.bid !== 'pass' && data.bid !== 'double' && data.bid !== 'redouble') {
             room.gameState.contract = bid;
             room.gameState.declarer = player.position;
         }
