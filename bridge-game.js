@@ -460,7 +460,7 @@ class BridgeGame {
                 playerNameDisplay.classList.add('current-player-highlight');
             }
         } else {
-            currentPlayerEl.textContent = this.currentPlayer;
+            currentPlayerEl.textContent = '';
         }
     }
     
@@ -680,21 +680,50 @@ class BridgeGame {
         const ewScore = this.tricksWon.ew;
         
         let result = '';
+        let winningTeam = '';
+        let winningPlayers = '';
+        
         if (this.contract) {
             const needed = 6 + this.contract.level;
             const declarerTeam = (this.declarer === 'north' || this.declarer === 'south') ? 'ns' : 'ew';
             const made = declarerTeam === 'ns' ? nsScore : ewScore;
             
             if (made >= needed) {
-                result = `Contract made! ${this.contract.level}${this.contract.suit} by ${this.declarer}`;
+                winningTeam = declarerTeam;
+                result = `Contract made! ${this.contract.level}${this.getSuitSymbol(this.contract.suit)} by ${this.declarer}`;
             } else {
+                winningTeam = declarerTeam === 'ns' ? 'ew' : 'ns';
                 result = `Contract failed. Down ${needed - made}`;
             }
         } else {
+            // No contract, highest score wins
+            winningTeam = nsScore > ewScore ? 'ns' : 'ew';
             result = 'Game completed';
         }
         
-        alert(result);
+        // Get winning players
+        if (winningTeam === 'ns') {
+            const northName = this.playerNames.north || 'North';
+            const southName = this.playerNames.south || 'South';
+            winningPlayers = `${northName} (North) and ${southName} (South)`;
+        } else {
+            const eastName = this.playerNames.east || 'East';
+            const westName = this.playerNames.west || 'West';
+            winningPlayers = `${eastName} (East) and ${westName} (West)`;
+        }
+        
+        const finalResult = `${result}\n\nWinning Team: ${winningPlayers}\nFinal Score - NS: ${nsScore}, EW: ${ewScore}`;
+        alert(finalResult);
+    }
+    
+    getSuitSymbol(suit) {
+        const symbols = {
+            'c': '♣',
+            'd': '♦',
+            'h': '♥',
+            's': '♠'
+        };
+        return symbols[suit] || suit;
     }
 
     resetGame() {
