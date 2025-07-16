@@ -68,8 +68,8 @@ class BridgeGame {
         const level = parseInt(bidString[0]);
         const suit = bidString.slice(1);
         
-        // Suit values: clubs=1, diamonds=2, hearts=3, spades=4, notrump=5
-        const suitValues = { 'c': 1, 'd': 2, 'h': 3, 's': 4, 'nt': 5 };
+        // Suit values: clubs=1, diamonds=2, hearts=3, spades=4
+        const suitValues = { 'c': 1, 'd': 2, 'h': 3, 's': 4 };
         const suitValue = suitValues[suit] || 0;
         
         // Calculate overall bid value (level * 5 + suit value)
@@ -446,7 +446,8 @@ class BridgeGame {
     }
 
     displayPlayedCard(card, player) {
-        const container = document.getElementById(`${player}-played`);
+        const relativePosition = this.getRelativePosition(player);
+        const container = document.getElementById(`${relativePosition}-played`);
         container.innerHTML = '';
         
         const cardElement = this.createCardElement(card, 'played');
@@ -455,7 +456,8 @@ class BridgeGame {
 
     clearPlayedCards() {
         ['north', 'east', 'south', 'west'].forEach(position => {
-            document.getElementById(`${position}-played`).innerHTML = '';
+            const relativePosition = this.getRelativePosition(position);
+            document.getElementById(`${relativePosition}-played`).innerHTML = '';
         });
     }
 
