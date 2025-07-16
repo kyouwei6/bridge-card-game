@@ -574,7 +574,12 @@ class BridgeGame {
         } else {
             // Show card back for opponents
             cardDiv.className += ' card-back';
-            cardDiv.textContent = 'BRIDGE';
+            cardDiv.innerHTML = `
+                <div style="font-size: 8px; line-height: 1.2;">
+                    <div>♠♥</div>
+                    <div>♦♣</div>
+                </div>
+            `;
         }
         
         return cardDiv;

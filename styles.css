@@ -159,13 +159,14 @@ body {
 }
 
 .card-back {
-    background: linear-gradient(45deg, #2c3e50, #34495e);
+    background: linear-gradient(45deg, #8B4513, #A0522D);
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 10px;
-    border: 2px solid #1a252f;
+    border: 2px solid #654321;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .middle-section {
@@ -312,7 +313,7 @@ body {
     align-items: center;
     margin-top: 20px;
     padding: 10px 20px;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.6);
     border-radius: 10px;
 }
 
@@ -332,7 +333,11 @@ body {
     font-family: monospace;
     font-size: 18px;
     font-weight: bold;
-    color: #ffd700;
+    color: #2c3e50;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 3px 8px;
+    border-radius: 5px;
+    border: 1px solid #2c3e50;
 }
 
 .position-controls {
@@ -343,7 +348,12 @@ body {
 .position-label {
     font-weight: bold;
     margin-bottom: 8px;
-    color: #ffd700;
+    color: #2c3e50;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 3px 8px;
+    border-radius: 5px;
+    border: 1px solid #2c3e50;
+    display: inline-block;
 }
 
 .position-buttons {
