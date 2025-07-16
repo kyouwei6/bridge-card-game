@@ -14,6 +14,13 @@ class BridgeServer {
     }
 
     handleHttpRequest(req, res) {
+        // Health check endpoint for Render
+        if (req.url === '/health') {
+            res.writeHead(200, { 'Content-Type': 'text/plain' });
+            res.end('OK');
+            return;
+        }
+        
         let filePath = req.url === '/' ? '/index.html' : req.url;
         const extname = path.extname(filePath);
         
@@ -413,8 +420,15 @@ class BridgeServer {
     }
 
     start(port = process.env.PORT || 3000) {
+        console.log(`Starting bridge server on port ${port}...`);
+        
         this.server.listen(port, '0.0.0.0', () => {
-            console.log(`Bridge server running on port ${port}`);
+            console.log(`✅ Bridge server successfully running on port ${port}`);
+            console.log(`📍 Health check available at /health`);
+        });
+        
+        this.server.on('error', (error) => {
+            console.error('❌ Server error:', error);
         });
     }
 }
