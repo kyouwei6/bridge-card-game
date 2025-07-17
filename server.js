@@ -21,7 +21,15 @@ class BridgeServer {
             return;
         }
         
-        let filePath = req.url === '/' ? '/index.html' : req.url;
+        // Parse URL to remove query parameters for file serving
+        const url = new URL(req.url, `http://${req.headers.host}`);
+        let filePath = url.pathname === '/' ? '/index.html' : url.pathname;
+        
+        // If the request is for the root with query parameters, serve index.html
+        if (url.pathname === '/' && url.searchParams.has('room')) {
+            filePath = '/index.html';
+        }
+        
         const extname = path.extname(filePath);
         
         const mimeTypes = {
@@ -40,6 +48,19 @@ class BridgeServer {
             res.writeHead(200, { 'Content-Type': contentType });
             res.end(content);
         } catch (error) {
+            // If file not found and it's a potential route, serve index.html for client-side routing
+            if (error.code === 'ENOENT' && !extname) {
+                try {
+                    const indexPath = path.join(__dirname, '/index.html');
+                    const indexContent = fs.readFileSync(indexPath);
+                    res.writeHead(200, { 'Content-Type': 'text/html' });
+                    res.end(indexContent);
+                    return;
+                } catch (indexError) {
+                    // Fall through to 404
+                }
+            }
+            
             res.writeHead(404, { 'Content-Type': 'text/plain' });
             res.end('Not Found');
         }
