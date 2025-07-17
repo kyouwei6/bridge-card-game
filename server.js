@@ -87,6 +87,9 @@ class BridgeServer {
             case 'change_position':
                 this.handleChangePosition(ws, data);
                 break;
+            case 'chat_message':
+                this.handleChatMessage(ws, data);
+                break;
         }
     }
 
@@ -562,6 +565,34 @@ class BridgeServer {
             type: 'position_changed',
             player: { name: player.name, oldPosition, newPosition: data.newPosition },
             playerNames: room.playerNames
+        });
+    }
+
+    handleChatMessage(ws, data) {
+        const player = this.players.get(ws);
+        if (!player) return;
+        
+        const room = this.rooms.get(player.roomCode);
+        if (!room) return;
+        
+        // Only allow chat during waiting phase
+        if (room.gameState.phase !== 'waiting') {
+            ws.send(JSON.stringify({
+                type: 'error',
+                message: 'Chat is only available before the game starts'
+            }));
+            return;
+        }
+        
+        // Validate message
+        if (!data.message || data.message.trim().length === 0) return;
+        if (data.message.length > 200) return;
+        
+        // Broadcast chat message to all players in room
+        this.broadcastToRoom(player.roomCode, {
+            type: 'chat_message',
+            sender: player.name,
+            message: data.message.trim()
         });
     }
 

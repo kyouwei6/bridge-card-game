@@ -307,6 +307,15 @@ body {
     cursor: not-allowed;
 }
 
+.issue-btn {
+    background: #e74c3c;
+    color: white;
+}
+
+.issue-btn:hover {
+    background: #c0392b;
+}
+
 .connection-info {
     display: flex;
     justify-content: space-between;
@@ -409,6 +418,110 @@ body {
     100% { box-shadow: 0 0 10px rgba(255, 152, 0, 0.5); }
 }
 
+.chat-section {
+    margin-top: 20px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 10px;
+    padding: 15px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(139, 69, 19, 0.3);
+}
+
+.chat-header h3 {
+    margin: 0;
+    color: #8B4513;
+    font-size: 18px;
+}
+
+.chat-status {
+    font-size: 12px;
+    color: #16a085;
+    font-weight: bold;
+}
+
+.chat-status.disabled {
+    color: #e74c3c;
+}
+
+.chat-messages {
+    height: 200px;
+    overflow-y: auto;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(139, 69, 19, 0.3);
+}
+
+.chat-message {
+    margin-bottom: 8px;
+    padding: 5px 8px;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 3px;
+    border-left: 3px solid #8B4513;
+}
+
+.chat-message .sender {
+    font-weight: bold;
+    color: #8B4513;
+    font-size: 12px;
+}
+
+.chat-message .text {
+    color: #333;
+    font-size: 14px;
+    margin-top: 2px;
+}
+
+.chat-message .timestamp {
+    font-size: 10px;
+    color: #666;
+    float: right;
+}
+
+.chat-input-area {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+#chat-input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #8B4513;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.9);
+    color: #333;
+    font-size: 14px;
+}
+
+#chat-input:focus {
+    outline: none;
+    border-color: #16a085;
+    box-shadow: 0 0 5px rgba(22, 160, 133, 0.3);
+}
+
+#chat-input:disabled {
+    background: #f0f0f0;
+    color: #999;
+    cursor: not-allowed;
+}
+
+#send-chat {
+    padding: 8px 16px;
+    min-width: 70px;
+}
+
 @media (max-width: 768px) {
     .game-info {
         grid-template-columns: 1fr;
@@ -440,5 +553,28 @@ body {
     .played-card {
         width: 40px;
         height: 56px;
+    }
+    
+    .chat-section {
+        margin: 10px;
+    }
+    
+    .chat-messages {
+        height: 150px;
+    }
+    
+    .chat-header {
+        flex-direction: column;
+        gap: 5px;
+        text-align: center;
+    }
+    
+    .chat-input-area {
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    #chat-input {
+        width: 100%;
     }
 }

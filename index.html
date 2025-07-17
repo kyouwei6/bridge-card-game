@@ -101,6 +101,7 @@
             <button id="start-game" class="control-btn">Start Game</button>
             <button id="new-game" class="control-btn">New Game</button>
             <button id="connect" class="control-btn">Connect to Game</button>
+            <button id="issue-report" class="control-btn issue-btn">Report Issue</button>
         </div>
 
         <div class="connection-info">
@@ -118,6 +119,18 @@
                     <button class="position-btn" data-position="south">South</button>
                     <button class="position-btn" data-position="west">West</button>
                 </div>
+            </div>
+        </div>
+
+        <div class="chat-section" id="chat-section" style="display: none;">
+            <div class="chat-header">
+                <h3>Pre-Game Chat</h3>
+                <span class="chat-status" id="chat-status">Chat available until game starts</span>
+            </div>
+            <div class="chat-messages" id="chat-messages"></div>
+            <div class="chat-input-area">
+                <input type="text" id="chat-input" placeholder="Type your message..." maxlength="200">
+                <button id="send-chat" class="control-btn">Send</button>
             </div>
         </div>
     </div>

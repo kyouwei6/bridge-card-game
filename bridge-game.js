@@ -404,6 +404,22 @@ class BridgeGame {
             });
         });
 
+        // Issue report button
+        document.getElementById('issue-report').addEventListener('click', () => {
+            this.showIssueReport();
+        });
+
+        // Chat functionality
+        document.getElementById('send-chat').addEventListener('click', () => {
+            this.sendChatMessage();
+        });
+
+        document.getElementById('chat-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                this.sendChatMessage();
+            }
+        });
+
         // Card click handlers will be added dynamically
     }
 
@@ -428,6 +444,9 @@ class BridgeGame {
         
         // Update trump display
         this.updateTrumpDisplay();
+        
+        // Update chat status
+        this.updateChatStatus();
     }
 
     getPhaseText() {
@@ -850,6 +869,10 @@ class BridgeGame {
                 this.displayCards(); // Refresh card display with new positioning
                 break;
                 
+            case 'chat_message':
+                this.addChatMessage(data.sender, data.message);
+                break;
+                
             case 'error':
                 alert(`Error: ${data.message}`);
                 break;
@@ -1016,6 +1039,83 @@ class BridgeGame {
             type: 'change_position',
             newPosition: newPosition
         });
+    }
+
+    showIssueReport() {
+        const message = `If you encounter any issues or have suggestions, please contact us at:
+
+📧 Email: yiy26063@gmail.com
+
+Please include:
+• Description of the issue
+• Steps to reproduce (if applicable)
+• Browser and device information
+• Room code (if in a game)
+
+Thank you for helping us improve the game!`;
+        
+        alert(message);
+    }
+
+    updateChatStatus() {
+        const chatSection = document.getElementById('chat-section');
+        const chatInput = document.getElementById('chat-input');
+        const sendButton = document.getElementById('send-chat');
+        const chatStatus = document.getElementById('chat-status');
+        
+        if (this.connection && this.connection.readyState === WebSocket.OPEN && this.roomCode) {
+            chatSection.style.display = 'block';
+            
+            if (this.gamePhase === 'waiting') {
+                chatInput.disabled = false;
+                sendButton.disabled = false;
+                chatStatus.textContent = 'Chat available until game starts';
+                chatStatus.classList.remove('disabled');
+            } else {
+                chatInput.disabled = true;
+                sendButton.disabled = true;
+                chatStatus.textContent = 'Chat disabled during game';
+                chatStatus.classList.add('disabled');
+            }
+        } else {
+            chatSection.style.display = 'none';
+        }
+    }
+
+    sendChatMessage() {
+        const chatInput = document.getElementById('chat-input');
+        const message = chatInput.value.trim();
+        
+        if (!message || this.gamePhase !== 'waiting') return;
+        
+        if (this.connection && this.connection.readyState === WebSocket.OPEN) {
+            this.sendToServer({
+                type: 'chat_message',
+                message: message
+            });
+            chatInput.value = '';
+        } else {
+            // Local message for testing
+            this.addChatMessage('You', message);
+            chatInput.value = '';
+        }
+    }
+
+    addChatMessage(sender, text) {
+        const chatMessages = document.getElementById('chat-messages');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'chat-message';
+        
+        const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
+        messageDiv.innerHTML = `
+            <div class="sender">${sender}</div>
+            <div class="text">${text}</div>
+            <div class="timestamp">${timestamp}</div>
+        `;
+        
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 }
 
