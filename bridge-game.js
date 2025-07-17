@@ -554,19 +554,23 @@ class BridgeGame {
                 cards.forEach((card, index) => {
                     const cardElement = this.createCardElement(card, actualPosition);
                     
-                    // Only make player's own cards clickable
-                    const playerPosition = this.playerId || 'south';
-                    if (actualPosition === playerPosition) {
-                        cardElement.addEventListener('click', () => {
-                            if (this.gamePhase === 'playing' && this.currentPlayer === playerPosition) {
-                                if (this.playCard(card, playerPosition)) {
-                                    cardElement.remove();
+                    // Only add to container if cardElement is not null
+                    if (cardElement) {
+                        // Only make player's own cards clickable
+                        const playerPosition = this.playerId || 'south';
+                        if (actualPosition === playerPosition) {
+                            cardElement.addEventListener('click', () => {
+                                if (this.gamePhase === 'playing' && this.currentPlayer === playerPosition) {
+                                    if (this.playCard(card, playerPosition)) {
+                                        // Refresh the entire display instead of just removing the element
+                                        this.displayCards();
+                                    }
                                 }
-                            }
-                        });
+                            });
+                        }
+                        
+                        container.appendChild(cardElement);
                     }
-                    
-                    container.appendChild(cardElement);
                 });
             }
         });
@@ -597,14 +601,8 @@ class BridgeGame {
                 cardDiv.textContent = 'BRIDGE';
             }
         } else {
-            // Show card back for opponents
-            cardDiv.className += ' card-back';
-            cardDiv.innerHTML = `
-                <div style="font-size: 8px; line-height: 1.2;">
-                    <div>♠♥</div>
-                    <div>♦♣</div>
-                </div>
-            `;
+            // Don't show card backs for other players - return null
+            return null;
         }
         
         return cardDiv;
@@ -944,11 +942,15 @@ class BridgeGame {
             this.players[this.playerId] = gameState.playerHand;
         }
         
-        // Update other players' card counts
+        // Update other players' card counts (don't create fake cards)
         Object.keys(gameState.hands).forEach(position => {
             if (position !== this.playerId) {
                 const cardCount = gameState.hands[position].length;
-                this.players[position] = new Array(cardCount).fill({ suit: '', rank: '', color: 'black' });
+                // Just store the count, don't create fake card objects
+                this.playerCardCounts = this.playerCardCounts || {};
+                this.playerCardCounts[position] = cardCount;
+                // Clear other players' cards since we don't show them
+                this.players[position] = [];
             }
         });
         
