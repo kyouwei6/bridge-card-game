@@ -26,6 +26,7 @@ class BridgeGame {
             west: null
         };
         this.trickLeader = null;
+        this.playersCount = 0;
         
         this.initializeGame();
         this.setupEventListeners();
@@ -631,7 +632,15 @@ class BridgeGame {
             startBtn.style.display = 'inline-block';
             newGameBtn.style.display = 'inline-block';
             connectBtn.style.display = 'inline-block';
-            startBtn.disabled = false;
+            // Only enable start button if room is full (4 players)
+            startBtn.disabled = this.playersCount < 4;
+            if (this.playersCount < 4) {
+                startBtn.textContent = `Start Game (${this.playersCount}/4)`;
+                startBtn.title = 'Need 4 players to start the game';
+            } else {
+                startBtn.textContent = 'Start Game';
+                startBtn.title = 'All players ready! Click to start the game';
+            }
         } else if (this.gamePhase === 'bidding' || this.gamePhase === 'playing') {
             startBtn.style.display = 'none';
             connectBtn.style.display = 'none';
@@ -641,7 +650,14 @@ class BridgeGame {
             startBtn.style.display = 'inline-block';
             newGameBtn.style.display = 'inline-block';
             connectBtn.style.display = 'inline-block';
-            startBtn.disabled = this.gamePhase !== 'waiting';
+            startBtn.disabled = this.gamePhase !== 'waiting' || this.playersCount < 4;
+            if (this.playersCount < 4) {
+                startBtn.textContent = `Start Game (${this.playersCount}/4)`;
+                startBtn.title = 'Need 4 players to start the game';
+            } else {
+                startBtn.textContent = 'Start Game';
+                startBtn.title = 'All players ready! Click to start the game';
+            }
         }
         
         biddingArea.style.display = this.gamePhase === 'bidding' ? 'block' : 'none';
@@ -761,6 +777,7 @@ class BridgeGame {
         this.dummy = null;
         this.tricksWon = { ns: 0, ew: 0 };
         this.trickLeader = null;
+        // Don't reset playersCount as it should persist between games
         
         for (let player in this.players) {
             this.players[player] = [];
@@ -824,6 +841,7 @@ class BridgeGame {
             case 'joined_room':
                 this.roomCode = data.roomCode;
                 this.playerId = data.position;
+                this.playersCount = data.playersCount;
                 if (data.playerNames) {
                     this.playerNames = data.playerNames;
                 }
@@ -831,15 +849,20 @@ class BridgeGame {
                 document.getElementById('current-player').textContent = `${data.position} (${data.playersCount}/4)`;
                 this.updatePlayerNames();
                 
+                // Update UI to show chat now that we have a room
+                this.updateUI();
+                
                 // Show welcome message in chat
                 this.addSystemMessage(`Welcome to the room! You are ${data.position.charAt(0).toUpperCase() + data.position.slice(1)}.`);
                 break;
                 
             case 'player_joined':
+                this.playersCount = data.playersCount;
                 if (data.playerNames) {
                     this.playerNames = data.playerNames;
                 }
                 this.updatePlayerNames();
+                this.updateUI(); // Update start button state
                 
                 // Show join message in chat
                 this.addSystemMessage(`${data.player.name} joined as ${data.player.position.charAt(0).toUpperCase() + data.player.position.slice(1)}`);
@@ -858,10 +881,12 @@ class BridgeGame {
                 break;
                 
             case 'player_left':
+                this.playersCount = data.playersCount;
                 if (data.playerNames) {
                     this.playerNames = data.playerNames;
                 }
                 this.updatePlayerNames();
+                this.updateUI(); // Update start button state
                 
                 // Show leave message in chat
                 this.addSystemMessage(`${data.player.name} left the game`);

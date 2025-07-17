@@ -184,7 +184,13 @@ class BridgeServer {
         if (!player) return;
         
         const room = this.rooms.get(player.roomCode);
-        if (!room || room.players.length < 4) return;
+        if (!room || room.players.length < 4) {
+            ws.send(JSON.stringify({
+                type: 'error',
+                message: 'Cannot start game. Need 4 players to start.'
+            }));
+            return;
+        }
         
         this.dealCards(room);
         room.gameState.phase = 'bidding';
