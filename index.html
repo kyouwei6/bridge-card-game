@@ -81,17 +81,6 @@
                         </div>
                         <div class="bid-history" id="bid-history"></div>
                     </div>
-                    <div class="chat-section" id="chat-section" style="display: none;">
-                        <div class="chat-header">
-                            <h3>Room Chat</h3>
-                            <span class="chat-status" id="chat-status">Chat available until game starts</span>
-                        </div>
-                        <div class="chat-messages" id="chat-messages"></div>
-                        <div class="chat-input-area">
-                            <input type="text" id="chat-input" placeholder="Type your message..." maxlength="200">
-                            <button id="send-chat" class="control-btn">Send</button>
-                        </div>
-                    </div>
                 </div>
 
                 <div class="east-player player-area">
@@ -105,6 +94,21 @@
                 <div class="player-name" id="south-label">South (You)</div>
                 <div class="player-name-display" id="south-name">-</div>
                 <div class="player-cards" id="south-cards"></div>
+            </div>
+
+            <!-- Chat overlay positioned in center of game board -->
+            <div class="chat-overlay" id="chat-section" style="display: none;">
+                <div class="chat-section">
+                    <div class="chat-header">
+                        <h3>Room Chat</h3>
+                        <span class="chat-status" id="chat-status">Chat available until game starts</span>
+                    </div>
+                    <div class="chat-messages" id="chat-messages"></div>
+                    <div class="chat-input-area">
+                        <input type="text" id="chat-input" placeholder="Type your message..." maxlength="200">
+                        <button id="send-chat" class="control-btn">Send</button>
+                    </div>
+                </div>
             </div>
         </div>
 

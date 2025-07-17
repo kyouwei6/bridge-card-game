@@ -83,6 +83,17 @@ body {
     position: relative;
 }
 
+.chat-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 100;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80%;
+}
+
 .player-area {
     display: flex;
     flex-direction: column;
@@ -419,12 +430,13 @@ body {
 }
 
 .chat-section {
-    background: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.95);
     border-radius: 10px;
     padding: 15px;
     width: 100%;
-    max-width: 500px;
     margin: 0 auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    border: 2px solid #8B4513;
 }
 
 .chat-header {
@@ -453,13 +465,14 @@ body {
 }
 
 .chat-messages {
-    height: 180px;
+    height: 200px;
     overflow-y: auto;
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.9);
     border-radius: 5px;
     padding: 10px;
     margin-bottom: 10px;
     border: 1px solid rgba(139, 69, 19, 0.3);
+    max-height: 40vh;
 }
 
 .chat-message {
@@ -564,12 +577,18 @@ body {
         height: 56px;
     }
     
+    .chat-overlay {
+        width: 95%;
+        max-height: 70%;
+    }
+    
     .chat-section {
-        margin: 10px;
+        padding: 10px;
     }
     
     .chat-messages {
         height: 150px;
+        max-height: 30vh;
     }
     
     .chat-header {
