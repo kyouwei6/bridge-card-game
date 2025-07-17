@@ -830,6 +830,9 @@ class BridgeGame {
                 document.getElementById('room-code').textContent = data.roomCode;
                 document.getElementById('current-player').textContent = `${data.position} (${data.playersCount}/4)`;
                 this.updatePlayerNames();
+                
+                // Show welcome message in chat
+                this.addSystemMessage(`Welcome to the room! You are ${data.position.charAt(0).toUpperCase() + data.position.slice(1)}.`);
                 break;
                 
             case 'player_joined':
@@ -837,14 +840,20 @@ class BridgeGame {
                     this.playerNames = data.playerNames;
                 }
                 this.updatePlayerNames();
-                alert(`${data.player.name} joined as ${data.player.position}`);
+                
+                // Show join message in chat
+                this.addSystemMessage(`${data.player.name} joined as ${data.player.position.charAt(0).toUpperCase() + data.player.position.slice(1)}`);
                 break;
                 
             case 'room_full':
-                alert(data.message);
+                this.addSystemMessage(data.message);
                 break;
                 
             case 'game_state':
+                // Check if game is starting
+                if (this.gamePhase === 'waiting' && data.gameState.phase !== 'waiting') {
+                    this.addSystemMessage('Game is starting! Chat is now disabled.');
+                }
                 this.updateFromServerState(data.gameState);
                 break;
                 
@@ -853,7 +862,9 @@ class BridgeGame {
                     this.playerNames = data.playerNames;
                 }
                 this.updatePlayerNames();
-                alert(`${data.player.name} left the game`);
+                
+                // Show leave message in chat
+                this.addSystemMessage(`${data.player.name} left the game`);
                 break;
                 
             case 'position_changed':
@@ -1064,18 +1075,14 @@ Thank you for helping us improve the game!`;
         const chatStatus = document.getElementById('chat-status');
         
         if (this.connection && this.connection.readyState === WebSocket.OPEN && this.roomCode) {
-            chatSection.style.display = 'block';
-            
             if (this.gamePhase === 'waiting') {
+                chatSection.style.display = 'block';
                 chatInput.disabled = false;
                 sendButton.disabled = false;
                 chatStatus.textContent = 'Chat available until game starts';
                 chatStatus.classList.remove('disabled');
             } else {
-                chatInput.disabled = true;
-                sendButton.disabled = true;
-                chatStatus.textContent = 'Chat disabled during game';
-                chatStatus.classList.add('disabled');
+                chatSection.style.display = 'none';
             }
         } else {
             chatSection.style.display = 'none';
@@ -1110,6 +1117,23 @@ Thank you for helping us improve the game!`;
         
         messageDiv.innerHTML = `
             <div class="sender">${sender}</div>
+            <div class="text">${text}</div>
+            <div class="timestamp">${timestamp}</div>
+        `;
+        
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    addSystemMessage(text) {
+        const chatMessages = document.getElementById('chat-messages');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'chat-message system-message';
+        
+        const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
+        messageDiv.innerHTML = `
+            <div class="sender">System</div>
             <div class="text">${text}</div>
             <div class="timestamp">${timestamp}</div>
         `;

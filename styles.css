@@ -419,13 +419,12 @@ body {
 }
 
 .chat-section {
-    margin-top: 20px;
     background: rgba(255, 255, 255, 0.6);
     border-radius: 10px;
     padding: 15px;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
 }
 
 .chat-header {
@@ -454,7 +453,7 @@ body {
 }
 
 .chat-messages {
-    height: 200px;
+    height: 180px;
     overflow-y: auto;
     background: rgba(255, 255, 255, 0.8);
     border-radius: 5px;
@@ -471,10 +470,20 @@ body {
     border-left: 3px solid #8B4513;
 }
 
+.chat-message.system-message {
+    background: rgba(22, 160, 133, 0.1);
+    border-left: 3px solid #16a085;
+    font-style: italic;
+}
+
 .chat-message .sender {
     font-weight: bold;
     color: #8B4513;
     font-size: 12px;
+}
+
+.chat-message.system-message .sender {
+    color: #16a085;
 }
 
 .chat-message .text {
