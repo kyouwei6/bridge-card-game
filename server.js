@@ -602,11 +602,11 @@ class BridgeServer {
         const room = this.rooms.get(player.roomCode);
         if (!room) return;
         
-        // Only allow chat during waiting phase
-        if (room.gameState.phase !== 'waiting') {
+        // Only allow chat during waiting and finished phases
+        if (room.gameState.phase !== 'waiting' && room.gameState.phase !== 'finished') {
             ws.send(JSON.stringify({
                 type: 'error',
-                message: 'Chat is only available before the game starts'
+                message: 'Chat is only available before the game starts and after the game ends'
             }));
             return;
         }

@@ -852,6 +852,9 @@ class BridgeGame {
         // Reset trump display
         document.getElementById('trump-suit').textContent = 'None';
         document.getElementById('trump-suit').style.color = '#666';
+        
+        // Reset score display
+        this.updateScore();
     }
 
     connectToGame() {
@@ -1174,6 +1177,12 @@ Thank you for helping us improve the game!`;
                 chatInput.disabled = false;
                 sendButton.disabled = false;
                 chatStatus.textContent = 'Chat available until game starts';
+                chatStatus.classList.remove('disabled');
+            } else if (this.gamePhase === 'finished') {
+                chatSection.style.display = 'block';
+                chatInput.disabled = false;
+                sendButton.disabled = false;
+                chatStatus.textContent = 'Game finished - Chat available';
                 chatStatus.classList.remove('disabled');
             } else {
                 chatSection.style.display = 'none';
