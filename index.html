@@ -116,6 +116,7 @@
             <button id="start-game" class="control-btn">Start Game</button>
             <button id="new-game" class="control-btn">New Game</button>
             <button id="connect" class="control-btn">Connect to Game</button>
+            <button id="settings" class="control-btn">Settings</button>
             <button id="issue-report" class="control-btn issue-btn">Report Issue</button>
         </div>
 
@@ -140,6 +141,33 @@
                     <button class="position-btn" data-position="east">East</button>
                     <button class="position-btn" data-position="south">South</button>
                     <button class="position-btn" data-position="west">West</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Settings Modal -->
+        <div id="settings-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Settings</h2>
+                    <span class="close" id="close-settings">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <div class="setting-group">
+                        <label for="background-color">Background Color:</label>
+                        <div class="color-options">
+                            <button class="color-btn" data-color="#FFC1E0" style="background-color: #FFC1E0;">Pink</button>
+                            <button class="color-btn" data-color="#E8F5E8" style="background-color: #E8F5E8;">Green</button>
+                            <button class="color-btn" data-color="#E6F3FF" style="background-color: #E6F3FF;">Blue</button>
+                            <button class="color-btn" data-color="#FFF5E6" style="background-color: #FFF5E6;">Orange</button>
+                            <button class="color-btn" data-color="#F0F0F0" style="background-color: #F0F0F0;">Gray</button>
+                        </div>
+                    </div>
+                    <div class="setting-group">
+                        <label for="player-name">Your Name:</label>
+                        <input type="text" id="player-name-input" placeholder="Enter your name" maxlength="20">
+                        <button id="save-name" class="control-btn">Save Name</button>
+                    </div>
                 </div>
             </div>
         </div>

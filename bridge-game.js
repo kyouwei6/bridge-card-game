@@ -30,6 +30,7 @@ class BridgeGame {
         
         this.initializeGame();
         this.setupEventListeners();
+        this.loadSavedSettings();
     }
 
     initializeGame() {
@@ -424,6 +425,35 @@ class BridgeGame {
         // Copy link button
         document.getElementById('copy-link').addEventListener('click', () => {
             this.copyShareableLink();
+        });
+
+        // Settings button
+        document.getElementById('settings').addEventListener('click', () => {
+            this.showSettings();
+        });
+
+        // Settings modal close button
+        document.getElementById('close-settings').addEventListener('click', () => {
+            this.hideSettings();
+        });
+
+        // Color selection buttons
+        document.querySelectorAll('.color-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                this.changeBackgroundColor(e.target.dataset.color);
+            });
+        });
+
+        // Save name button
+        document.getElementById('save-name').addEventListener('click', () => {
+            this.savePlayerName();
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('settings-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'settings-modal') {
+                this.hideSettings();
+            }
         });
 
         // Card click handlers will be added dynamically
@@ -858,7 +888,8 @@ class BridgeGame {
     }
 
     connectToGame() {
-        const playerName = prompt('Enter your name:');
+        const savedName = localStorage.getItem('bridgePlayerName');
+        const playerName = savedName || prompt('Enter your name:');
         if (!playerName) return;
         
         const roomCode = prompt('Enter room code (leave empty to create new room):');
@@ -1196,7 +1227,7 @@ Thank you for helping us improve the game!`;
         const chatInput = document.getElementById('chat-input');
         const message = chatInput.value.trim();
         
-        if (!message || this.gamePhase !== 'waiting') return;
+        if (!message || (this.gamePhase !== 'waiting' && this.gamePhase !== 'finished')) return;
         
         if (this.connection && this.connection.readyState === WebSocket.OPEN) {
             this.sendToServer({
@@ -1334,6 +1365,93 @@ Thank you for helping us improve the game!`;
                 
                 alert('Link copied to clipboard!');
             });
+        }
+    }
+
+    // Settings functionality
+    showSettings() {
+        const modal = document.getElementById('settings-modal');
+        modal.style.display = 'block';
+        
+        // Load current settings
+        this.loadCurrentSettings();
+    }
+
+    hideSettings() {
+        const modal = document.getElementById('settings-modal');
+        modal.style.display = 'none';
+    }
+
+    loadCurrentSettings() {
+        // Load saved background color
+        const savedColor = localStorage.getItem('bridgeBackgroundColor') || '#FFC1E0';
+        document.querySelectorAll('.color-btn').forEach(btn => {
+            btn.classList.remove('selected');
+            if (btn.dataset.color === savedColor) {
+                btn.classList.add('selected');
+            }
+        });
+
+        // Load saved player name
+        const savedName = localStorage.getItem('bridgePlayerName') || '';
+        document.getElementById('player-name-input').value = savedName;
+    }
+
+    changeBackgroundColor(color) {
+        document.body.style.background = color;
+        localStorage.setItem('bridgeBackgroundColor', color);
+        
+        // Update button selection
+        document.querySelectorAll('.color-btn').forEach(btn => {
+            btn.classList.remove('selected');
+            if (btn.dataset.color === color) {
+                btn.classList.add('selected');
+            }
+        });
+    }
+
+    savePlayerName() {
+        const nameInput = document.getElementById('player-name-input');
+        const newName = nameInput.value.trim();
+        
+        if (!newName) {
+            alert('Please enter a valid name');
+            return;
+        }
+        
+        if (newName.length > 20) {
+            alert('Name must be 20 characters or less');
+            return;
+        }
+        
+        localStorage.setItem('bridgePlayerName', newName);
+        
+        // Update current player name if connected
+        if (this.connection && this.connection.readyState === WebSocket.OPEN) {
+            // Update the displayed name
+            const playerPosition = this.playerId;
+            if (playerPosition) {
+                this.playerNames[playerPosition] = newName;
+                this.updatePlayerNames();
+            }
+        }
+        
+        alert('Name saved successfully!');
+        this.hideSettings();
+    }
+
+    // Load settings on initialization
+    loadSavedSettings() {
+        // Load background color
+        const savedColor = localStorage.getItem('bridgeBackgroundColor');
+        if (savedColor) {
+            document.body.style.background = savedColor;
+        }
+        
+        // Load player name
+        const savedName = localStorage.getItem('bridgePlayerName');
+        if (savedName) {
+            // Will be used when connecting to games
         }
     }
 }
