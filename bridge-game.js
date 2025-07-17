@@ -421,6 +421,11 @@ class BridgeGame {
             }
         });
 
+        // Copy link button
+        document.getElementById('copy-link').addEventListener('click', () => {
+            this.copyShareableLink();
+        });
+
         // Card click handlers will be added dynamically
     }
 
@@ -849,6 +854,9 @@ class BridgeGame {
                 document.getElementById('current-player').textContent = `${data.position} (${data.playersCount}/4)`;
                 this.updatePlayerNames();
                 
+                // Update URL with room code
+                this.updateUrlWithRoomCode(data.roomCode);
+                
                 // Update UI to show chat now that we have a room
                 this.updateUI();
                 
@@ -1166,6 +1174,98 @@ Thank you for helping us improve the game!`;
         chatMessages.appendChild(messageDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
+
+    checkUrlForRoomCode() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const roomCode = urlParams.get('room');
+        
+        if (roomCode) {
+            // Auto-prompt for player name and join room
+            setTimeout(() => {
+                const playerName = prompt(`Join room ${roomCode}. Enter your name:`);
+                if (playerName) {
+                    this.autoJoinRoom(roomCode, playerName);
+                }
+            }, 500);
+        }
+    }
+
+    autoJoinRoom(roomCode, playerName) {
+        const wsUrl = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+        const wsHost = window.location.host || 'localhost:3000';
+        this.connection = new WebSocket(wsUrl + wsHost);
+        
+        this.connection.onopen = () => {
+            document.getElementById('connection-status').textContent = 'Connected';
+            document.getElementById('connection-status').className = 'connected';
+            
+            this.connection.send(JSON.stringify({
+                type: 'join_room',
+                roomCode: roomCode,
+                playerName: playerName
+            }));
+        };
+        
+        this.connection.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            this.handleServerMessage(data);
+        };
+        
+        this.connection.onclose = () => {
+            document.getElementById('connection-status').textContent = 'Disconnected';
+            document.getElementById('connection-status').className = 'disconnected';
+        };
+        
+        this.connection.onerror = (error) => {
+            console.error('WebSocket error:', error);
+            alert('Connection failed. Make sure the server is running.');
+        };
+    }
+
+    updateUrlWithRoomCode(roomCode) {
+        const newUrl = `${window.location.origin}${window.location.pathname}?room=${roomCode}`;
+        window.history.pushState({ roomCode }, `Bridge Game - Room ${roomCode}`, newUrl);
+        
+        // Show shareable link
+        this.showShareableLink(newUrl);
+    }
+
+    showShareableLink(url) {
+        const linkElement = document.getElementById('shareable-link');
+        const containerElement = document.getElementById('shareable-link-container');
+        
+        if (linkElement && containerElement) {
+            linkElement.textContent = url;
+            containerElement.style.display = 'block';
+            this.shareableUrl = url; // Store for copying
+        }
+    }
+
+    copyShareableLink() {
+        if (this.shareableUrl) {
+            navigator.clipboard.writeText(this.shareableUrl).then(() => {
+                const copyBtn = document.getElementById('copy-link');
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = '✓';
+                copyBtn.style.background = '#27ae60';
+                
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                    copyBtn.style.background = '#16a085';
+                }, 2000);
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = this.shareableUrl;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                alert('Link copied to clipboard!');
+            });
+        }
+    }
 }
 
 // Initialize the game when the page loads
@@ -1174,4 +1274,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Make game globally accessible for debugging
     window.bridgeGame = game;
+    
+    // Check for room code in URL and auto-join
+    game.checkUrlForRoomCode();
 });

@@ -415,6 +415,60 @@ body {
     cursor: not-allowed;
 }
 
+.shareable-link-container {
+    margin-top: 15px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 8px;
+    border: 1px solid #16a085;
+}
+
+.share-label {
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.shareable-link-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+#shareable-link {
+    flex: 1;
+    font-family: monospace;
+    font-size: 12px;
+    color: #2c3e50;
+    word-break: break-all;
+    line-height: 1.2;
+}
+
+.copy-btn {
+    background: #16a085;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.3s;
+    min-width: 35px;
+}
+
+.copy-btn:hover {
+    background: #138d75;
+}
+
+.copy-btn:active {
+    background: #0f6d5a;
+}
+
 .current-player-highlight {
     background: #ff9800 !important;
     color: white !important;
@@ -604,5 +658,20 @@ body {
     
     #chat-input {
         width: 100%;
+    }
+    
+    .shareable-link-box {
+        flex-direction: column;
+        gap: 5px;
+        align-items: stretch;
+    }
+    
+    #shareable-link {
+        text-align: center;
+    }
+    
+    .copy-btn {
+        align-self: center;
+        min-width: 80px;
     }
 }
