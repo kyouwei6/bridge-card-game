@@ -460,9 +460,51 @@ class BridgeGame {
             case 'waiting': return 'Waiting for game to start';
             case 'bidding': return 'Bidding phase';
             case 'playing': return 'Playing cards';
-            case 'finished': return 'Game finished';
+            case 'finished': return this.getWinningTeamText();
             default: return 'Unknown phase';
         }
+    }
+    
+    getWinningTeamText() {
+        const nsScore = this.tricksWon.ns;
+        const ewScore = this.tricksWon.ew;
+        
+        let winningTeam = '';
+        let winningPlayers = '';
+        
+        if (this.contract) {
+            const needed = 6 + this.contract.level;
+            const declarerTeam = (this.declarer === 'north' || this.declarer === 'south') ? 'ns' : 'ew';
+            const made = declarerTeam === 'ns' ? nsScore : ewScore;
+            
+            if (made >= needed) {
+                winningTeam = declarerTeam;
+            } else {
+                winningTeam = declarerTeam === 'ns' ? 'ew' : 'ns';
+            }
+        } else {
+            // No contract, highest score wins
+            if (nsScore > ewScore) {
+                winningTeam = 'ns';
+            } else if (ewScore > nsScore) {
+                winningTeam = 'ew';
+            } else {
+                return 'Game finished - Tie!';
+            }
+        }
+        
+        // Get winning players
+        if (winningTeam === 'ns') {
+            const northName = this.playerNames.north || 'North';
+            const southName = this.playerNames.south || 'South';
+            winningPlayers = `${northName} & ${southName}`;
+        } else {
+            const eastName = this.playerNames.east || 'East';
+            const westName = this.playerNames.west || 'West';
+            winningPlayers = `${eastName} & ${westName}`;
+        }
+        
+        return `Winners: ${winningPlayers}`;
     }
     
     updateCurrentPlayerDisplay() {
@@ -725,6 +767,7 @@ class BridgeGame {
         let result = '';
         let winningTeam = '';
         let winningPlayers = '';
+        let winReason = '';
         
         if (this.contract) {
             const needed = 6 + this.contract.level;
@@ -733,14 +776,30 @@ class BridgeGame {
             
             if (made >= needed) {
                 winningTeam = declarerTeam;
+                const overtricks = made - needed;
                 result = `Contract made! ${this.contract.level}${this.getSuitSymbol(this.contract.suit)} by ${this.declarer}`;
+                winReason = overtricks > 0 ? `Made with ${overtricks} overtrick${overtricks > 1 ? 's' : ''}` : 'Made exactly';
             } else {
                 winningTeam = declarerTeam === 'ns' ? 'ew' : 'ns';
-                result = `Contract failed. Down ${needed - made}`;
+                const down = needed - made;
+                result = `Contract failed. Down ${down}`;
+                winReason = `Defeated the contract by ${down} trick${down > 1 ? 's' : ''}`;
             }
         } else {
             // No contract, highest score wins
-            winningTeam = nsScore > ewScore ? 'ns' : 'ew';
+            if (nsScore > ewScore) {
+                winningTeam = 'ns';
+                winReason = `Won by ${nsScore - ewScore} trick${nsScore - ewScore > 1 ? 's' : ''}`;
+            } else if (ewScore > nsScore) {
+                winningTeam = 'ew';
+                winReason = `Won by ${ewScore - nsScore} trick${ewScore - nsScore > 1 ? 's' : ''}`;
+            } else {
+                result = 'Game ended in a tie!';
+                winReason = 'Both teams scored equally';
+                const finalResult = `${result}\n\n${winReason}\nFinal Score - NS: ${nsScore}, EW: ${ewScore}`;
+                alert(finalResult);
+                return;
+            }
             result = 'Game completed';
         }
         
@@ -755,7 +814,7 @@ class BridgeGame {
             winningPlayers = `${eastName} (East) and ${westName} (West)`;
         }
         
-        const finalResult = `${result}\n\nWinning Team: ${winningPlayers}\nFinal Score - NS: ${nsScore}, EW: ${ewScore}`;
+        const finalResult = `🎉 GAME OVER 🎉\n\n${result}\n\nWINNERS: ${winningPlayers}\nReason: ${winReason}\n\nFinal Score - NS: ${nsScore}, EW: ${ewScore}`;
         alert(finalResult);
     }
     
