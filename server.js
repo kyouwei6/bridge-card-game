@@ -48,6 +48,16 @@ class BridgeServer {
             return;
         }
         
+        // Room browser endpoint
+        if (req.url === '/api/rooms') {
+            this.logAction(clientIP, 'browse_rooms', '/api/rooms');
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+                rooms: this.getAllRooms()
+            }));
+            return;
+        }
+        
         // Parse URL to remove query parameters for file serving
         const url = new URL(req.url, `http://${req.headers.host}`);
         let filePath = url.pathname === '/' ? '/index.html' : url.pathname;
@@ -134,10 +144,10 @@ class BridgeServer {
         
         switch (data.type) {
             case 'join_room':
-                this.joinRoom(ws, data.roomCode, data.playerName);
+                this.joinRoom(ws, data.roomCode, data.playerName, data.password);
                 break;
             case 'create_room':
-                this.createRoom(ws, data.playerName);
+                this.createRoom(ws, data.playerName, data.password);
                 break;
             case 'game_action':
                 this.handleGameAction(ws, data);
@@ -160,10 +170,11 @@ class BridgeServer {
         }
     }
 
-    createRoom(ws, playerName) {
+    createRoom(ws, playerName, password = null) {
         const roomCode = this.generateRoomCode();
         const room = {
             code: roomCode,
+            password: password,
             players: [],
             playerNames: {
                 north: null,
@@ -186,15 +197,24 @@ class BridgeServer {
         };
         
         this.rooms.set(roomCode, room);
-        this.joinRoom(ws, roomCode, playerName);
+        this.joinRoom(ws, roomCode, playerName, password);
     }
 
-    joinRoom(ws, roomCode, playerName) {
+    joinRoom(ws, roomCode, playerName, password = null) {
         const room = this.rooms.get(roomCode);
         if (!room) {
             ws.send(JSON.stringify({
                 type: 'error',
                 message: 'Room not found'
+            }));
+            return;
+        }
+        
+        // Check password if room has one
+        if (room.password && room.password !== password) {
+            ws.send(JSON.stringify({
+                type: 'error',
+                message: 'Incorrect password'
             }));
             return;
         }
@@ -714,6 +734,20 @@ class BridgeServer {
             .filter(log => log.ip === ip)
             .slice(-limit)
             .reverse();
+    }
+
+    getAllRooms() {
+        const rooms = [];
+        for (const [code, room] of this.rooms) {
+            rooms.push({
+                code: code,
+                status: room.gameState.phase,
+                playerCount: room.players.length,
+                hasPassword: !!room.password,
+                players: room.playerNames
+            });
+        }
+        return rooms;
     }
 
     start(port = process.env.PORT || 3000) {

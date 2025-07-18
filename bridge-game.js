@@ -432,6 +432,11 @@ class BridgeGame {
             this.showSettings();
         });
 
+        // Browse Rooms button
+        document.getElementById('browse-rooms').addEventListener('click', () => {
+            window.location.href = '/rooms.html';
+        });
+
         // Settings modal close button
         document.getElementById('close-settings').addEventListener('click', () => {
             this.hideSettings();
