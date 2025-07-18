@@ -893,8 +893,12 @@ class BridgeGame {
     }
 
     connectToGame() {
+        // Check if we have a name from URL (from room browser)
+        const urlParams = new URLSearchParams(window.location.search);
+        const nameFromUrl = urlParams.get('name');
+        
         const savedName = localStorage.getItem('bridgePlayerName');
-        const playerName = savedName || prompt('Enter your name:');
+        const playerName = nameFromUrl || savedName || prompt('Enter your name:');
         if (!playerName) return;
         
         const roomCode = prompt('Enter room code (leave empty to create new room):');
@@ -1284,12 +1288,18 @@ Thank you for helping us improve the game!`;
     checkUrlForRoomCode() {
         const urlParams = new URLSearchParams(window.location.search);
         const roomCode = urlParams.get('room');
+        const nameFromUrl = urlParams.get('name');
         
         if (roomCode) {
-            // Auto-prompt for player name and join room
+            // Auto-join room with name from URL or saved name
             setTimeout(() => {
-                const playerName = prompt(`Join room ${roomCode}. Enter your name:`);
+                const savedName = localStorage.getItem('bridgePlayerName');
+                const playerName = nameFromUrl || savedName || prompt(`Join room ${roomCode}. Enter your name:`);
                 if (playerName) {
+                    // Save the name to localStorage if not already saved
+                    if (!savedName) {
+                        localStorage.setItem('bridgePlayerName', playerName);
+                    }
                     this.autoJoinRoom(roomCode, playerName);
                 }
             }, 500);
