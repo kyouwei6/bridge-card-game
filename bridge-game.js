@@ -31,6 +31,7 @@ class BridgeGame {
         this.initializeGame();
         this.setupEventListeners();
         this.loadSavedSettings();
+        this.updateButtonVisibility();
     }
 
     initializeGame() {
@@ -488,6 +489,9 @@ class BridgeGame {
         
         // Update chat status
         this.updateChatStatus();
+        
+        // Update button visibility
+        this.updateButtonVisibility();
     }
 
     getPhaseText() {
@@ -1229,6 +1233,28 @@ Thank you for helping us improve the game!`;
             }
         } else {
             chatSection.style.display = 'none';
+        }
+    }
+
+    updateButtonVisibility() {
+        const newGameBtn = document.getElementById('new-game');
+        const startGameBtn = document.getElementById('start-game');
+        
+        // Show/hide New Game button based on game phase
+        if (this.gamePhase === 'finished') {
+            newGameBtn.style.display = 'inline-block';
+        } else {
+            newGameBtn.style.display = 'none';
+        }
+        
+        // Show/hide Start Game button based on connection and room status
+        if (this.connection && this.connection.readyState === WebSocket.OPEN && 
+            this.roomCode && this.gamePhase === 'waiting' && this.playersCount >= 4) {
+            startGameBtn.style.display = 'inline-block';
+        } else if (!this.connection || this.connection.readyState !== WebSocket.OPEN) {
+            startGameBtn.style.display = 'inline-block';
+        } else {
+            startGameBtn.style.display = 'none';
         }
     }
 

@@ -498,8 +498,10 @@
                 const data = JSON.parse(event.data);
 
                 if (data.type === 'joined_room') {
-                    // Successfully joined, redirect to main game with player name
-                    window.location.href = `/?room=${roomCode}&name=${encodeURIComponent(playerName)}`;
+                    // Successfully joined, wait a moment then redirect
+                    setTimeout(() => {
+                        window.location.href = `/?room=${roomCode}&name=${encodeURIComponent(playerName)}`;
+                    }, 100);
                 } else if (data.type === 'error') {
                     alert('Error: ' + data.message);
                     connection.close();
@@ -569,8 +571,10 @@
                 const data = JSON.parse(event.data);
 
                 if (data.type === 'joined_room') {
-                    // Successfully created and joined, redirect to main game with player name
-                    window.location.href = `/?room=${data.roomCode}&name=${encodeURIComponent(playerName)}`;
+                    // Successfully created and joined, wait a moment then redirect
+                    setTimeout(() => {
+                        window.location.href = `/?room=${data.roomCode}&name=${encodeURIComponent(playerName)}`;
+                    }, 100);
                 } else if (data.type === 'error') {
                     alert('Error: ' + data.message);
                     connection.close();
