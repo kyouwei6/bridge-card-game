@@ -484,7 +484,14 @@ class BridgeServer {
         const room = this.rooms.get(player.roomCode);
         if (!room || room.gameState.phase !== 'playing') return;
         
-        if (room.gameState.currentPlayer !== player.position) return;
+        if (room.gameState.currentPlayer !== player.position) {
+            console.log(`Player ${player.position} tried to play but it's ${room.gameState.currentPlayer}'s turn`);
+            ws.send(JSON.stringify({
+                type: 'error',
+                message: `It's not your turn. Current player is ${room.gameState.currentPlayer}`
+            }));
+            return;
+        }
         
         // Validate card play according to bridge rules
         if (!this.isValidCardPlay(data.card, player.position, room)) {
@@ -543,7 +550,13 @@ class BridgeServer {
         if (trick.length !== 4) return null;
         
         const leadSuit = trick[0].card.suit;
-        const trump = gameState.contract ? gameState.contract.suit : null;
+        let trump = gameState.contract ? gameState.contract.suit : null;
+        
+        // Convert trump suit from letter format to symbol format
+        if (trump) {
+            const suitSymbols = { 'c': '♣', 'd': '♦', 'h': '♥', 's': '♠' };
+            trump = suitSymbols[trump] || trump;
+        }
         
         let winner = trick[0];
         
