@@ -230,6 +230,16 @@ class BridgeServer {
             return;
         }
         
+        // Check for duplicate names
+        const existingPlayer = room.players.find(p => p.name.toLowerCase() === playerName.toLowerCase());
+        if (existingPlayer) {
+            ws.send(JSON.stringify({
+                type: 'error',
+                message: `Name "${playerName}" is already taken in this room. Please choose a different name.`
+            }));
+            return;
+        }
+        
         const positions = ['north', 'east', 'south', 'west'];
         const availablePosition = positions.find(pos => 
             !room.players.some(p => p.position === pos)
@@ -705,6 +715,18 @@ class BridgeServer {
         
         const newName = data.newName.trim();
         const oldName = player.name;
+        
+        // Check for duplicate names (excluding current player)
+        const existingPlayer = room.players.find(p => 
+            p.name.toLowerCase() === newName.toLowerCase() && p.ws !== ws
+        );
+        if (existingPlayer) {
+            ws.send(JSON.stringify({
+                type: 'error',
+                message: `Name "${newName}" is already taken in this room. Please choose a different name.`
+            }));
+            return;
+        }
         
         // Update player name
         player.name = newName;

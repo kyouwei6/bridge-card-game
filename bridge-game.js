@@ -438,6 +438,11 @@ class BridgeGame {
             window.location.href = '/rooms.html';
         });
 
+        // Leave Room button
+        document.getElementById('leave-room').addEventListener('click', () => {
+            this.leaveRoom();
+        });
+
         // Settings modal close button
         document.getElementById('close-settings').addEventListener('click', () => {
             this.hideSettings();
@@ -1013,6 +1018,12 @@ class BridgeGame {
                 
                 // Show name change message in chat
                 this.addSystemMessage(`${data.oldName} changed name to ${data.newName}`);
+                
+                // If this was our name change, close settings modal and show success
+                if (data.position === this.playerId) {
+                    alert('Name changed successfully!');
+                    this.hideSettings();
+                }
                 break;
                 
             case 'position_changed':
@@ -1250,6 +1261,7 @@ Thank you for helping us improve the game!`;
     updateButtonVisibility() {
         const newGameBtn = document.getElementById('new-game');
         const startGameBtn = document.getElementById('start-game');
+        const leaveRoomBtn = document.getElementById('leave-room');
         
         // Show/hide New Game button based on game phase
         if (this.gamePhase === 'finished') {
@@ -1266,6 +1278,13 @@ Thank you for helping us improve the game!`;
             startGameBtn.style.display = 'inline-block';
         } else {
             startGameBtn.style.display = 'none';
+        }
+        
+        // Show/hide Leave Room button based on connection status
+        if (this.connection && this.connection.readyState === WebSocket.OPEN && this.roomCode) {
+            leaveRoomBtn.style.display = 'inline-block';
+        } else {
+            leaveRoomBtn.style.display = 'none';
         }
     }
 
@@ -1544,13 +1563,15 @@ Thank you for helping us improve the game!`;
                 newName: newName
             });
             
-            // Update local display
-            this.playerNames[this.playerId] = newName;
-            this.updatePlayerNames();
+            // Don't update local display immediately - wait for server confirmation
+            // Don't close settings modal yet - wait for server response
+            
+            // The server will either send 'name_updated' or 'error' response
+            // We'll handle it in handleServerMessage
+        } else {
+            alert('Name saved successfully!');
+            this.hideSettings();
         }
-        
-        alert('Name saved successfully!');
-        this.hideSettings();
     }
 
     // Load settings on initialization
@@ -1565,6 +1586,46 @@ Thank you for helping us improve the game!`;
         const savedName = localStorage.getItem('bridgePlayerName');
         if (savedName) {
             // Will be used when connecting to games
+        }
+    }
+
+    leaveRoom() {
+        if (this.connection && this.connection.readyState === WebSocket.OPEN) {
+            // Close the connection
+            this.connection.close();
+            
+            // Reset game state
+            this.roomCode = null;
+            this.playerId = null;
+            this.gamePhase = 'waiting';
+            this.playersCount = 0;
+            this.playerNames = {
+                north: null,
+                east: null,
+                south: null,
+                west: null
+            };
+            
+            // Reset UI
+            document.getElementById('connection-status').textContent = 'Disconnected';
+            document.getElementById('connection-status').className = 'disconnected';
+            document.getElementById('room-code').textContent = '-';
+            document.getElementById('position-controls').style.display = 'none';
+            document.getElementById('shareable-link-container').style.display = 'none';
+            
+            // Clear URL parameters
+            window.history.pushState({}, 'Bridge Card Game', '/');
+            
+            // Update UI
+            this.updateUI();
+            this.updatePlayerNames();
+            
+            // Clear chat
+            document.getElementById('chat-messages').innerHTML = '';
+            
+            alert('Left the room successfully!');
+        } else {
+            alert('You are not connected to any room.');
         }
     }
 }
