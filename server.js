@@ -30,7 +30,7 @@ class BridgeServer {
             this.logAction(clientIP, 'view_logs', '/logs');
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({
-                logs: this.getActionLogs(100),
+                logs: this.getActionLogs(50),
                 total: this.actionLogs.length
             }));
             return;
@@ -42,7 +42,7 @@ class BridgeServer {
             this.logAction(clientIP, 'view_logs_by_ip', `/logs/ip/${ip}`, { target_ip: ip });
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({
-                logs: this.getLogsByIP(ip, 50),
+                logs: this.getLogsByIP(ip, 25),
                 ip: ip
             }));
             return;
@@ -72,10 +72,10 @@ class BridgeServer {
             const fullPath = path.join(__dirname, filePath);
             const content = fs.readFileSync(fullPath);
             
-            this.logAction(clientIP, 'file_request', filePath, { 
-                content_type: contentType,
-                file_size: content.length 
-            });
+            // Only log non-static file requests
+            if (filePath === '/index.html' || filePath === '/admin.html') {
+                this.logAction(clientIP, 'page_request', filePath);
+            }
             
             res.writeHead(200, { 'Content-Type': contentType });
             res.end(content);
@@ -123,11 +123,14 @@ class BridgeServer {
     }
 
     handleMessage(ws, data, clientIP) {
-        this.logAction(clientIP, `websocket_${data.type}`, '/websocket', { 
-            action: data.type,
-            room_code: data.roomCode || 'N/A',
-            player_name: data.playerName || 'N/A'
-        });
+        // Only log important actions to reduce noise
+        const importantActions = ['join_room', 'create_room', 'start_game', 'bid', 'play_card'];
+        if (importantActions.includes(data.type)) {
+            this.logAction(clientIP, `websocket_${data.type}`, '/websocket', { 
+                action: data.type,
+                room_code: data.roomCode || 'N/A'
+            });
+        }
         
         switch (data.type) {
             case 'join_room':
@@ -686,45 +689,29 @@ class BridgeServer {
             ip: ip,
             action: action,
             path: path,
-            details: details,
-            id: Date.now() + Math.random() // Simple unique ID
+            details: details
         };
         
         this.actionLogs.push(logEntry);
         
-        // Keep only last 1000 entries to prevent memory issues
-        if (this.actionLogs.length > 1000) {
-            this.actionLogs = this.actionLogs.slice(-1000);
+        // Keep only last 100 entries to prevent memory issues
+        if (this.actionLogs.length > 100) {
+            this.actionLogs = this.actionLogs.slice(-100);
         }
         
         console.log(`[${logEntry.timestamp}] ${ip} - ${action} on ${path}`);
         
-        // Optional: Save to file for persistence
-        this.saveLogToFile(logEntry);
-        
         return logEntry;
     }
 
-    saveLogToFile(logEntry) {
-        // Optional file persistence - uncomment to enable
-        // const logLine = `${logEntry.timestamp}|${logEntry.ip}|${logEntry.action}|${logEntry.path}|${JSON.stringify(logEntry.details)}\n`;
-        // fs.appendFileSync('action_logs.txt', logLine);
-    }
 
-    getActionLogs(limit = 100) {
+    getActionLogs(limit = 50) {
         return this.actionLogs.slice(-limit).reverse(); // Most recent first
     }
 
-    getLogsByIP(ip, limit = 50) {
+    getLogsByIP(ip, limit = 25) {
         return this.actionLogs
             .filter(log => log.ip === ip)
-            .slice(-limit)
-            .reverse();
-    }
-
-    getLogsByAction(action, limit = 50) {
-        return this.actionLogs
-            .filter(log => log.action === action)
             .slice(-limit)
             .reverse();
     }
