@@ -1004,6 +1004,17 @@ class BridgeGame {
                 this.addSystemMessage(`${data.player.name} left the game`);
                 break;
                 
+            case 'name_updated':
+                // Update player names
+                if (data.playerNames) {
+                    this.playerNames = data.playerNames;
+                }
+                this.updatePlayerNames();
+                
+                // Show name change message in chat
+                this.addSystemMessage(`${data.oldName} changed name to ${data.newName}`);
+                break;
+                
             case 'position_changed':
                 // Check if this was the current player who changed position
                 if (data.player.oldPosition === this.playerId) {
@@ -1315,8 +1326,23 @@ Thank you for helping us improve the game!`;
         const urlParams = new URLSearchParams(window.location.search);
         const roomCode = urlParams.get('room');
         const nameFromUrl = urlParams.get('name');
+        const passwordFromUrl = urlParams.get('password');
+        const createRoom = urlParams.get('create');
         
-        if (roomCode) {
+        if (createRoom === 'true') {
+            // Create new room
+            setTimeout(() => {
+                const savedName = localStorage.getItem('bridgePlayerName');
+                const playerName = nameFromUrl || savedName || prompt('Enter your name:');
+                if (playerName) {
+                    // Save the name to localStorage if not already saved
+                    if (!savedName) {
+                        localStorage.setItem('bridgePlayerName', playerName);
+                    }
+                    this.autoCreateRoom(playerName, passwordFromUrl);
+                }
+            }, 500);
+        } else if (roomCode) {
             // Auto-join room with name from URL or saved name
             setTimeout(() => {
                 const savedName = localStorage.getItem('bridgePlayerName');
@@ -1326,13 +1352,13 @@ Thank you for helping us improve the game!`;
                     if (!savedName) {
                         localStorage.setItem('bridgePlayerName', playerName);
                     }
-                    this.autoJoinRoom(roomCode, playerName);
+                    this.autoJoinRoom(roomCode, playerName, passwordFromUrl);
                 }
             }, 500);
         }
     }
 
-    autoJoinRoom(roomCode, playerName) {
+    autoJoinRoom(roomCode, playerName, password = null) {
         const wsUrl = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
         const wsHost = window.location.host || 'localhost:3000';
         this.connection = new WebSocket(wsUrl + wsHost);
@@ -1341,11 +1367,54 @@ Thank you for helping us improve the game!`;
             document.getElementById('connection-status').textContent = 'Connected';
             document.getElementById('connection-status').className = 'connected';
             
-            this.connection.send(JSON.stringify({
+            const joinData = {
                 type: 'join_room',
                 roomCode: roomCode,
                 playerName: playerName
-            }));
+            };
+            
+            if (password) {
+                joinData.password = password;
+            }
+            
+            this.connection.send(JSON.stringify(joinData));
+        };
+        
+        this.connection.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            this.handleServerMessage(data);
+        };
+        
+        this.connection.onclose = () => {
+            document.getElementById('connection-status').textContent = 'Disconnected';
+            document.getElementById('connection-status').className = 'disconnected';
+        };
+        
+        this.connection.onerror = (error) => {
+            console.error('WebSocket error:', error);
+            alert('Connection failed. Make sure the server is running.');
+        };
+    }
+
+    autoCreateRoom(playerName, password = null) {
+        const wsUrl = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+        const wsHost = window.location.host || 'localhost:3000';
+        this.connection = new WebSocket(wsUrl + wsHost);
+        
+        this.connection.onopen = () => {
+            document.getElementById('connection-status').textContent = 'Connected';
+            document.getElementById('connection-status').className = 'connected';
+            
+            const createData = {
+                type: 'create_room',
+                playerName: playerName
+            };
+            
+            if (password) {
+                createData.password = password;
+            }
+            
+            this.connection.send(JSON.stringify(createData));
         };
         
         this.connection.onmessage = (event) => {
@@ -1468,13 +1537,16 @@ Thank you for helping us improve the game!`;
         localStorage.setItem('bridgePlayerName', newName);
         
         // Update current player name if connected
-        if (this.connection && this.connection.readyState === WebSocket.OPEN) {
-            // Update the displayed name
-            const playerPosition = this.playerId;
-            if (playerPosition) {
-                this.playerNames[playerPosition] = newName;
-                this.updatePlayerNames();
-            }
+        if (this.connection && this.connection.readyState === WebSocket.OPEN && this.playerId) {
+            // Send name update to server
+            this.sendToServer({
+                type: 'update_name',
+                newName: newName
+            });
+            
+            // Update local display
+            this.playerNames[this.playerId] = newName;
+            this.updatePlayerNames();
         }
         
         alert('Name saved successfully!');

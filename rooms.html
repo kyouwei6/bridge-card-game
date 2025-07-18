@@ -475,42 +475,14 @@
             // Save the name to avoid duplicate prompts
             localStorage.setItem('bridgePlayerName', playerName);
 
-            // Connect to WebSocket and join room
-            const wsUrl = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-            const wsHost = window.location.host || 'localhost:3000';
-            connection = new WebSocket(wsUrl + wsHost);
-
-            connection.onopen = () => {
-                const joinData = {
-                    type: 'join_room',
-                    roomCode: roomCode,
-                    playerName: playerName
-                };
-
-                if (password) {
-                    joinData.password = password;
-                }
-
-                connection.send(JSON.stringify(joinData));
-            };
-
-            connection.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-
-                if (data.type === 'joined_room') {
-                    // Successfully joined, wait a moment then redirect
-                    setTimeout(() => {
-                        window.location.href = `/?room=${roomCode}&name=${encodeURIComponent(playerName)}`;
-                    }, 100);
-                } else if (data.type === 'error') {
-                    alert('Error: ' + data.message);
-                    connection.close();
-                }
-            };
-
-            connection.onerror = () => {
-                alert('Connection error. Please try again.');
-            };
+            // Instead of creating new WebSocket connection, redirect to main game
+            // with room code and name, let the main game handle the connection
+            let redirectUrl = `/?room=${roomCode}&name=${encodeURIComponent(playerName)}`;
+            if (password) {
+                redirectUrl += `&password=${encodeURIComponent(password)}`;
+            }
+            
+            window.location.href = redirectUrl;
         }
 
         function showCreateRoomModal() {
@@ -549,42 +521,14 @@
             // Save name to localStorage
             localStorage.setItem('bridgePlayerName', playerName);
 
-            // Connect to WebSocket and create room
-            const wsUrl = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-            const wsHost = window.location.host || 'localhost:3000';
-            connection = new WebSocket(wsUrl + wsHost);
-
-            connection.onopen = () => {
-                const createData = {
-                    type: 'create_room',
-                    playerName: playerName
-                };
-
-                if (hasPassword) {
-                    createData.password = password;
-                }
-
-                connection.send(JSON.stringify(createData));
-            };
-
-            connection.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-
-                if (data.type === 'joined_room') {
-                    // Successfully created and joined, wait a moment then redirect
-                    setTimeout(() => {
-                        window.location.href = `/?room=${data.roomCode}&name=${encodeURIComponent(playerName)}`;
-                    }, 100);
-                } else if (data.type === 'error') {
-                    alert('Error: ' + data.message);
-                    connection.close();
-                }
-            };
-
-            connection.onerror = () => {
-                alert('Connection error. Please try again.');
-            };
-
+            // Instead of creating WebSocket connection here, redirect to main game
+            // with create room parameters, let the main game handle the connection
+            let redirectUrl = `/?create=true&name=${encodeURIComponent(playerName)}`;
+            if (hasPassword) {
+                redirectUrl += `&password=${encodeURIComponent(password)}`;
+            }
+            
+            window.location.href = redirectUrl;
             hideCreateRoomModal();
         }
 

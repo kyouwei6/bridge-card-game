@@ -167,6 +167,9 @@ class BridgeServer {
             case 'chat_message':
                 this.handleChatMessage(ws, data);
                 break;
+            case 'update_name':
+                this.handleUpdateName(ws, data);
+                break;
         }
     }
 
@@ -686,6 +689,34 @@ class BridgeServer {
             type: 'chat_message',
             sender: player.name,
             message: data.message.trim()
+        });
+    }
+
+    handleUpdateName(ws, data) {
+        const player = this.players.get(ws);
+        if (!player) return;
+        
+        const room = this.rooms.get(player.roomCode);
+        if (!room) return;
+        
+        // Validate new name
+        if (!data.newName || data.newName.trim().length === 0) return;
+        if (data.newName.length > 20) return;
+        
+        const newName = data.newName.trim();
+        const oldName = player.name;
+        
+        // Update player name
+        player.name = newName;
+        room.playerNames[player.position] = newName;
+        
+        // Broadcast name change to all players in room
+        this.broadcastToRoom(player.roomCode, {
+            type: 'name_updated',
+            position: player.position,
+            oldName: oldName,
+            newName: newName,
+            playerNames: room.playerNames
         });
     }
 
