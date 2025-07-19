@@ -472,6 +472,13 @@ class BridgeGame {
             });
         });
 
+        // Card size selection buttons
+        document.querySelectorAll('.size-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                this.changeCardSize(e.target.dataset.size);
+            });
+        });
+
         // Save name button
         document.getElementById('save-name').addEventListener('click', () => {
             this.savePlayerName();
@@ -682,7 +689,8 @@ class BridgeGame {
 
     createCardElement(card, position) {
         const cardDiv = document.createElement('div');
-        cardDiv.className = `card ${card.color}`;
+        const cardSize = localStorage.getItem('bridgeCardSize') || 'medium';
+        cardDiv.className = `card ${card.color} ${cardSize}`;
 
         // Check if this card should be visible to the player
         const playerPosition = this.playerId || 'south';
@@ -1603,6 +1611,21 @@ Thank you for helping us improve the game!`;
         });
     }
 
+    changeCardSize(size) {
+        localStorage.setItem('bridgeCardSize', size);
+
+        // Update button selection
+        document.querySelectorAll('.size-btn').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.dataset.size === size) {
+                btn.classList.add('active');
+            }
+        });
+
+        // Re-render all cards with new size
+        this.displayCards();
+    }
+
     savePlayerName() {
         const nameInput = document.getElementById('player-name-input');
         const newName = nameInput.value.trim();
@@ -1644,7 +1667,24 @@ Thank you for helping us improve the game!`;
         const savedColor = localStorage.getItem('bridgeBackgroundColor');
         if (savedColor) {
             document.body.style.background = savedColor;
+            // Update color button selection
+            document.querySelectorAll('.color-btn').forEach(btn => {
+                btn.classList.remove('selected');
+                if (btn.dataset.color === savedColor) {
+                    btn.classList.add('selected');
+                }
+            });
         }
+
+        // Load card size
+        const savedSize = localStorage.getItem('bridgeCardSize') || 'medium';
+        // Update size button selection
+        document.querySelectorAll('.size-btn').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.dataset.size === savedSize) {
+                btn.classList.add('active');
+            }
+        });
 
         // Load player name
         const savedName = localStorage.getItem('bridgePlayerName');

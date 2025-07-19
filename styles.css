@@ -793,6 +793,53 @@ body {
     transform: scale(1.1);
 }
 
+.size-options {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.size-btn {
+    width: 80px;
+    height: 40px;
+    border: 2px solid #8B4513;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+    color: #333;
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+.size-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.size-btn.active {
+    border-color: #16a085;
+    border-width: 3px;
+    transform: scale(1.1);
+    background: #e8f5e8;
+}
+
+/* Card size variations */
+.card.small {
+    width: 40px;
+    height: 56px;
+}
+
+.card.medium {
+    width: 50px;
+    height: 70px;
+}
+
+.card.large {
+    width: 60px;
+    height: 84px;
+}
+
 #player-name-input {
     width: 100%;
     padding: 10px;
