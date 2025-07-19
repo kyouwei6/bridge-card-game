@@ -694,11 +694,8 @@ class BridgeGame {
         if (isPlayerOwnCards || isDummyCards || isPlayedCard) {
             // Check if card has valid data
             if (card.rank && card.suit) {
-                cardDiv.innerHTML = `
-                    <div>${card.rank}</div>
-                    <div>${card.suit}</div>
-                    <div>${card.rank}</div>
-                `;
+                const svgFileName = this.getCardSVGFileName(card);
+                cardDiv.innerHTML = `<img src="cards/${svgFileName}" alt="${card.rank}${card.suit}" class="card-image">`;
             } else {
                 // Fallback for cards without data
                 cardDiv.className += ' card-back';
@@ -710,6 +707,38 @@ class BridgeGame {
         }
 
         return cardDiv;
+    }
+
+    getCardSVGFileName(card) {
+        // Convert suit symbols to letters
+        const suitMap = {
+            '♠': 'S',
+            '♥': 'H', 
+            '♦': 'D',
+            '♣': 'C'
+        };
+        
+        // Convert rank to SVG format
+        const rankMap = {
+            'A': 'A',
+            'K': 'K',
+            'Q': 'Q', 
+            'J': 'J',
+            '10': 'T',
+            '9': '9',
+            '8': '8',
+            '7': '7',
+            '6': '6',
+            '5': '5',
+            '4': '4',
+            '3': '3',
+            '2': '2'
+        };
+        
+        const suit = suitMap[card.suit] || 'S';
+        const rank = rankMap[card.rank] || card.rank;
+        
+        return `${rank}${suit}.svg`;
     }
 
     displayPlayedCard(card, player) {

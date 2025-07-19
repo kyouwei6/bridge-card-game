@@ -830,12 +830,11 @@ class BridgeServer {
         console.log(`Starting bridge server on port ${port}...`);
         
         this.server.listen(port, '0.0.0.0', () => {
-            console.log(`✅ Bridge server successfully running on port ${port}`);
-            console.log(`📍 Health check available at /health`);
+            console.log(`Bridge server running on port ${port}`);
         });
         
         this.server.on('error', (error) => {
-            console.error('❌ Server error:', error);
+            console.error('Server error:', error);
         });
     }
 }
