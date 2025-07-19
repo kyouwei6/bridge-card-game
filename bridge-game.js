@@ -342,7 +342,8 @@ class BridgeGame {
         // Check if bidding is complete (3 consecutive passes after a bid)
         if (this.isBiddingComplete()) {
             this.gamePhase = 'playing';
-            this.currentPlayer = this.getNextPlayer(this.declarer);
+            // Player opposite to the declarer leads the first trick
+            this.currentPlayer = this.getOppositePlayer(this.declarer);
             this.showContract();
         } else {
             this.currentPlayer = this.getNextPlayer(this.currentPlayer);
@@ -365,6 +366,16 @@ class BridgeGame {
         const order = ['north', 'east', 'south', 'west'];
         const currentIndex = order.indexOf(player);
         return order[(currentIndex + 1) % 4];
+    }
+
+    getOppositePlayer(player) {
+        const opposites = {
+            'north': 'south',
+            'south': 'north', 
+            'east': 'west',
+            'west': 'east'
+        };
+        return opposites[player];
     }
 
     getPartner(player) {
@@ -653,14 +664,11 @@ class BridgeGame {
                         const playerPosition = this.playerId || 'south';
                         if (actualPosition === playerPosition) {
                             cardElement.addEventListener('click', () => {
-                                console.log('Card clicked:', card, 'Current player:', this.currentPlayer, 'Player position:', playerPosition, 'Game phase:', this.gamePhase);
                                 if (this.gamePhase === 'playing' && this.currentPlayer === playerPosition) {
                                     if (this.playCard(card, playerPosition)) {
                                         // Refresh the entire display instead of just removing the element
                                         this.displayCards();
                                     }
-                                } else {
-                                    console.log('Card not playable - Game phase:', this.gamePhase, 'Current player:', this.currentPlayer, 'Your position:', playerPosition);
                                 }
                             });
                         }
@@ -1078,10 +1086,6 @@ class BridgeGame {
         // Update player hands
         if (gameState.playerHand) {
             this.players[this.playerId] = gameState.playerHand;
-            console.log(`Player ${this.playerId} has ${gameState.playerHand.length} cards remaining`);
-            if (gameState.playerHand.length === 4) {
-                console.log('WARNING: Player has 4 cards left - potential issue zone');
-            }
         }
 
         // Update other players' card counts (don't create fake cards)

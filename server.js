@@ -442,7 +442,8 @@ class BridgeServer {
         
         if (this.isBiddingComplete(room.gameState)) {
             room.gameState.phase = 'playing';
-            room.gameState.currentPlayer = this.getNextPlayer(room.gameState.declarer);
+            // Player opposite to the declarer leads the first trick
+            room.gameState.currentPlayer = this.getOppositePlayer(room.gameState.declarer);
         } else {
             room.gameState.currentPlayer = this.getNextPlayer(player.position);
         }
@@ -485,7 +486,6 @@ class BridgeServer {
         if (!room || room.gameState.phase !== 'playing') return;
         
         if (room.gameState.currentPlayer !== player.position) {
-            console.log(`Player ${player.position} tried to play but it's ${room.gameState.currentPlayer}'s turn`);
             ws.send(JSON.stringify({
                 type: 'error',
                 message: `It's not your turn. Current player is ${room.gameState.currentPlayer}`
@@ -593,6 +593,16 @@ class BridgeServer {
         const order = ['north', 'east', 'south', 'west'];
         const currentIndex = order.indexOf(player);
         return order[(currentIndex + 1) % 4];
+    }
+
+    getOppositePlayer(player) {
+        const opposites = {
+            'north': 'south',
+            'south': 'north', 
+            'east': 'west',
+            'west': 'east'
+        };
+        return opposites[player];
     }
 
     broadcastGameState(room) {
