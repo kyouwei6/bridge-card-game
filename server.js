@@ -73,7 +73,11 @@ class BridgeServer {
             '.html': 'text/html',
             '.css': 'text/css',
             '.js': 'text/javascript',
-            '.json': 'application/json'
+            '.json': 'application/json',
+            '.svg': 'image/svg+xml',
+            '.png': 'image/png',
+            '.jpg': 'image/jpeg',
+            '.jpeg': 'image/jpeg'
         };
         
         const contentType = mimeTypes[extname] || 'text/plain';

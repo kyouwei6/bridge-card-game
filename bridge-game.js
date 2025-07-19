@@ -695,7 +695,23 @@ class BridgeGame {
             // Check if card has valid data
             if (card.rank && card.suit) {
                 const svgFileName = this.getCardSVGFileName(card);
-                cardDiv.innerHTML = `<img src="cards/${svgFileName}" alt="${card.rank}${card.suit}" class="card-image">`;
+                const img = document.createElement('img');
+                img.src = `cards/${svgFileName}`;
+                img.alt = `${card.rank}${card.suit}`;
+                img.className = 'card-image';
+                
+                // Fallback to text if image fails to load
+                img.onerror = () => {
+                    cardDiv.innerHTML = `
+                        <div style="font-size: 10px; color: ${card.color === 'red' ? '#dc2626' : '#000'};">
+                            <div>${card.rank}</div>
+                            <div>${card.suit}</div>
+                            <div>${card.rank}</div>
+                        </div>
+                    `;
+                };
+                
+                cardDiv.appendChild(img);
             } else {
                 // Fallback for cards without data
                 cardDiv.className += ' card-back';
