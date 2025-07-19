@@ -1624,6 +1624,13 @@ Thank you for helping us improve the game!`;
 
         // Re-render all cards with new size
         this.displayCards();
+        
+        // Re-render any currently played cards with new size
+        if (this.currentTrick && this.currentTrick.length > 0) {
+            this.currentTrick.forEach(play => {
+                this.displayPlayedCard(play.card, play.player);
+            });
+        }
     }
 
     savePlayerName() {
